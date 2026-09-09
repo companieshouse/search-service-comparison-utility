@@ -2,6 +2,8 @@ package uk.gov.companieshouse.search.comparison.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -13,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
@@ -37,7 +40,7 @@ class DocumentCountServiceTest {
     }
 
     @Test
-    void testGetDocumentCounts() throws Exception {
+    void testGetDocumentCounts() {
         var blueSearchResponse = new SearchResponse(new SearchResponse.Hits(new SearchResponse.Total(1234, "eq")));
         var greenSearchResponse = new SearchResponse(new SearchResponse.Hits(new SearchResponse.Total(5678, "eq")));
 
@@ -59,5 +62,19 @@ class DocumentCountServiceTest {
         assertEquals(1234, response.totalDocuments().blue());
         assertEquals(5678, response.totalDocuments().green());
     }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenClusterReturnsNonOkStatus() {
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+            eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(SearchResponse.class)))
+            .thenReturn(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> client.getDocumentCounts());
+
+        assertTrue(exception.getMessage().contains("blue"));
+    }
+
 }
 

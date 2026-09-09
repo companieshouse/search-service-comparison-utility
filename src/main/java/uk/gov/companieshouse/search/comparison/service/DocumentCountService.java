@@ -33,7 +33,7 @@ public class DocumentCountService {
         this.restTemplate = restTemplate;
     }
 
-    public DocumentCountResponse getDocumentCounts() throws IOException {
+    public DocumentCountResponse getDocumentCounts() {
         LOGGER.info("Fetching document counts from blue and green clusters");
 
         long blueCount = getDocumentCount(blueSearchClusterUrl, "blue");
@@ -45,7 +45,7 @@ public class DocumentCountService {
         return new DocumentCountResponse(counts);
     }
 
-    private long getDocumentCount(String baseUrl, String clusterName) throws IOException {
+    private long getDocumentCount(String baseUrl, String clusterName) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
             .pathSegment(indexName, "_search")
             .toUriString();
@@ -61,7 +61,7 @@ public class DocumentCountService {
             if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
                 LOGGER.error(String.format("Failed to get document count from %s cluster. Status: %s",
                     clusterName, response.getStatusCode()));
-                return 0L;
+                throw new RuntimeException("Failed to get document count from " + clusterName);
             }
 
             long count = response.getBody().hits().total().value();
@@ -69,7 +69,7 @@ public class DocumentCountService {
             return count;
         } catch (RestClientException e) {
             LOGGER.error(String.format("Error querying %s cluster at %s: %s", clusterName, url, e.getMessage()), e);
-            throw new IOException(String.format("Failed to get document count from %s cluster", clusterName), e);
+            throw new RuntimeException(String.format("Failed to get document count from %s cluster", clusterName), e);
         }
     }
 }

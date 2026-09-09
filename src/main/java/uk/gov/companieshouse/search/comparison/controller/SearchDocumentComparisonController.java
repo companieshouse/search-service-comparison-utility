@@ -7,7 +7,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/documents")
@@ -29,18 +28,6 @@ public class SearchDocumentComparisonController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             LOGGER.error("Error retrieving document counts: " + e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("/compare")
-    public ResponseEntity<Map<String, Object>> compareSearchIndexes() {
-        try {
-            LOGGER.info("Comparison - Blue and Green search results");
-            Map<String, Object> result = Map.of();
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            LOGGER.error("Error comparing indexes: " + e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
