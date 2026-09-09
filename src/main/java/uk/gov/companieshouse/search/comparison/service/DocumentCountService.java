@@ -14,8 +14,6 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.model.SearchResponse;
 
-import java.io.IOException;
-
 public class DocumentCountService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
