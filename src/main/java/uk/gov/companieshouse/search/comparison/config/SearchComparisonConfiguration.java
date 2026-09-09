@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 
 @Configuration
-public class SearchComparisonServiceConfiguration {
+public class SearchComparisonConfiguration {
 
     @Value("${BLUE_SEARCH_CLUSTER_URL}")
     private String blueSearchClusterUrl;

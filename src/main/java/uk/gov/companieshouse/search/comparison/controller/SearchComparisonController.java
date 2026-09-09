@@ -10,12 +10,12 @@ import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 
 @RestController
 @RequestMapping("/documents")
-public class SearchDocumentComparisonController {
+public class SearchComparisonController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
     private final DocumentCountService documentCountService;
 
-    public SearchDocumentComparisonController(DocumentCountService documentCountService) {
+    public SearchComparisonController(DocumentCountService documentCountService) {
         this.documentCountService = documentCountService;
     }
 

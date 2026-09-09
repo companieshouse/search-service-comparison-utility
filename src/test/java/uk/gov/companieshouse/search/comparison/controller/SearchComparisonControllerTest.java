@@ -14,8 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 
-@WebMvcTest(SearchDocumentComparisonController.class)
-class SearchDocumentComparisonControllerTest {
+@WebMvcTest(SearchComparisonController.class)
+class SearchComparisonControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

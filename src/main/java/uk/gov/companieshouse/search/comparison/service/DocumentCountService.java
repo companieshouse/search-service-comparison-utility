@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.model.SearchResponse;
 
@@ -59,7 +60,7 @@ public class DocumentCountService {
             if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
                 LOGGER.error(String.format("Failed to get document count from %s cluster. Status: %s",
                     clusterName, response.getStatusCode()));
-                throw new RuntimeException("Failed to get document count from " + clusterName);
+                throw new SearchComparisonException("Failed to get document count from " + clusterName);
             }
 
             long count = response.getBody().hits().total().value();
@@ -67,7 +68,8 @@ public class DocumentCountService {
             return count;
         } catch (RestClientException e) {
             LOGGER.error(String.format("Error querying %s cluster at %s: %s", clusterName, url, e.getMessage()), e);
-            throw new RuntimeException(String.format("Failed to get document count from %s cluster", clusterName), e);
+            throw new SearchComparisonException(
+                String.format("Failed to get document count from %s cluster", clusterName), e);
         }
     }
 }

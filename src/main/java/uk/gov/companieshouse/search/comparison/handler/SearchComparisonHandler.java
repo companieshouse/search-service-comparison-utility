@@ -14,7 +14,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.SearchComparisonServiceApplication;
 
-public class SearchDocumentComparisonHandler implements RequestStreamHandler {
+public class SearchComparisonHandler implements RequestStreamHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
 

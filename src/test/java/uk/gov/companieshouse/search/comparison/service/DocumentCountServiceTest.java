@@ -17,7 +17,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.model.SearchResponse;
 
@@ -71,9 +73,38 @@ class DocumentCountServiceTest {
             eq(SearchResponse.class)))
             .thenReturn(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> client.getDocumentCounts());
+        SearchComparisonException exception = assertThrows(
+            SearchComparisonException.class, () -> client.getDocumentCounts());
 
         assertTrue(exception.getMessage().contains("blue"));
+    }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenClusterReturnsNullBody() {
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+            eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(SearchResponse.class)))
+            .thenReturn(ResponseEntity.ok(null));
+
+        SearchComparisonException exception = assertThrows(
+            SearchComparisonException.class, () -> client.getDocumentCounts());
+
+        assertTrue(exception.getMessage().contains("blue"));
+    }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenRestClientFails() {
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+            eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(SearchResponse.class)))
+            .thenThrow(new ResourceAccessException("Connection refused"));
+
+        SearchComparisonException exception = assertThrows(
+            SearchComparisonException.class, () -> client.getDocumentCounts());
+
+        assertNotNull(exception.getCause());
     }
 
 }

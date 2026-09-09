@@ -108,8 +108,8 @@
                 <version>${jacoco-maven-plugin.version}</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/handler/SearchDocumentComparisonHandler.class</exclude>
-                        <exclude>**/config/SearchComparisonServiceConfiguration.class</exclude>
+                        <exclude>**/handler/SearchComparisonHandler.class</exclude>
+                        <exclude>**/config/SearchComparisonConfiguration.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
