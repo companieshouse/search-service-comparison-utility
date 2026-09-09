@@ -22,6 +22,15 @@
         <aws-java-sdk-s3.version>1.12.797</aws-java-sdk-s3.version>
         <aws-serverless-java-container-springboot3.version>2.1.5</aws-serverless-java-container-springboot3.version>
         <structured-logging.version>3.0.57</structured-logging.version>
+
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.sources>src/main</sonar.sources>
+        <sonar.tests>src/test</sonar.tests>
+        <sonar.verbose>true</sonar.verbose>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.basedir}/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>**/model/**</sonar.coverage.exclusions>
     </properties>
 
     <dependencyManagement>
