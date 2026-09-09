@@ -1,0 +1,20 @@
+# Build artifacts
+target/
+*.jar
+*.zip
+
+# Eclipse files
+.classpath
+.project
+.settings
+bin/
+
+# IntelliJ files
+.idea/
+*.iml
+
+# Mac files
+.DS_Store
+._*
+
+.terraform/
