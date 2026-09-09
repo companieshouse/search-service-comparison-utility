@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.SearchComparisonServiceApplication;
+import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 
 public class SearchComparisonHandler implements RequestStreamHandler {
 
@@ -25,7 +26,7 @@ public class SearchComparisonHandler implements RequestStreamHandler {
             handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(SearchComparisonServiceApplication.class);
         } catch (ContainerInitializationException e) {
             LOGGER.error("Error could not initialize application", e);
-            throw new RuntimeException("Could not initialize application", e);
+            throw new SearchComparisonException("Could not initialize application", e);
         }
     }
 

@@ -57,13 +57,14 @@ public class DocumentCountService {
             ResponseEntity<SearchResponse> response = restTemplate.exchange(
                 url, HttpMethod.GET, requestEntity, SearchResponse.class);
 
-            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            SearchResponse body = response.getBody();
+            if (response.getStatusCode() != HttpStatus.OK || body == null) {
                 LOGGER.error(String.format("Failed to get document count from %s cluster. Status: %s",
                     clusterName, response.getStatusCode()));
                 throw new SearchComparisonException("Failed to get document count from " + clusterName);
             }
 
-            long count = response.getBody().hits().total().value();
+            long count = body.hits().total().value();
             LOGGER.info(String.format("Document count from %s cluster: %d", clusterName, count));
             return count;
         } catch (RestClientException e) {
