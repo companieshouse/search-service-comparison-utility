@@ -124,6 +124,8 @@
                 <version>${maven-shade-plugin.version}</version>
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <shadedClassifierName>lambda</shadedClassifierName>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
