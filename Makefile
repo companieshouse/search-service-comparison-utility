@@ -1,22 +1,26 @@
-artifact_name       := search-service-comparison-utility
+service_name       := search-service-comparison-utility
 version             := "unversioned"
+artifact_name := $(service_name)-$(version)
+shadedClassifierName := -lambda
 
 .PHONY: all
 all: clean build
 
 .PHONY: clean
 clean:
+	@echo "Running clean"
 	mvn clean
-	rm -f ./$(artifact_name).jar
-	rm -f ./$(artifact_name)-*.zip
+	rm -f ./$(artifact_name)*.jar
 	rm -rf ./build-*
-	rm -rf ./build.log-*
+	rm -f ./build.log
+	@echo "Finished clean"
 
 .PHONY: build
 build:
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	mvn package -DskipTests=true
-	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
+	cp ./target/$(artifact_name)${shadedClassifierName}.jar .
+	@echo "Finished build"
 
 .PHONY: test
 test: test-unit
@@ -36,10 +40,9 @@ ifndef version
 endif
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	$(info Packaging version: $(version))
-	@test -s ./$(artifact_name).jar || { echo "ERROR: Service JAR not found"; exit 1; }
-	cp ./$(artifact_name).jar ./$(artifact_name).zip
-	cp ./$(artifact_name)-$(version).jar ./$(artifact_name)-$(version).zip
-
+	@test -s ./$(artifact_name)$(shadedClassifierName).jar || { echo "ERROR: Service JAR not found"; exit 1; }
+	cp ./$(artifact_name)$(shadedClassifierName).jar ./$(artifact_name).zip
+	@echo "Finished package"
 
 .PHONY: dist
 dist: clean build package
