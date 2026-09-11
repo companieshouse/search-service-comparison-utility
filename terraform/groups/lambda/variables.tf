@@ -29,8 +29,7 @@ variable "lambda_function_name" {
 variable "lambda_handler_name" {
   type        = string
   description = "The lambda function entrypoint"
-  # TODO - UPDATE THIS
-  #default     = "uk.gov.companieshouse.efs.documentconverter.DocumentMessageHandler::handleRequest" 
+  default     = "uk.gov.companieshouse.search.comparison.handler.SearchComparisonHandler"
 }
 
 variable "lambda_logs_retention_days" {
