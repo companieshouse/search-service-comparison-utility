@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
+import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
 @WebMvcTest(SearchComparisonController.class)
 class SearchComparisonControllerTest {
@@ -22,6 +23,8 @@ class SearchComparisonControllerTest {
 
     @MockitoBean
     private DocumentCountService documentCountService;
+    @MockitoBean
+    private MatchQueryComparisonService matchQueryComparisonService;
 
     @Test
     void testGetDocumentCount() throws Exception {
