@@ -23,16 +23,23 @@ public class MatchQueryComparisonService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final String blueBaseUrl;
+    private final String greenBaseUrl;
 
-   // @Value("${search.blue.base-url:http://localhost:9400}")
-    @Value("${BLUE_SEARCH_CLUSTER_URL}")
-    private String blueBaseUrl;
+
+    // @Value("${search.blue.base-url:http://localhost:9400}")
+//    @Value("${BLUE_SEARCH_CLUSTER_URL}")
+//    private String blueBaseUrl;
 
     //@Value("${search.green.base-url:http://localhost:9500}")
-    @Value("${GREEN_SEARCH_CLUSTER_URL}")
-    private String greenBaseUrl;
+//    @Value("${GREEN_SEARCH_CLUSTER_URL}")
+//    private String greenBaseUrl;
 
-    public MatchQueryComparisonService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public MatchQueryComparisonService(@Value("${BLUE_SEARCH_CLUSTER_URL}") String blueBaseUrl,
+                                       @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenBaseUrl,
+                                       RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.blueBaseUrl = blueBaseUrl;
+        this.greenBaseUrl = greenBaseUrl;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
