@@ -2,15 +2,25 @@ package uk.gov.companieshouse.search.comparison.model;
 
 public class Discrepancy {
 
+    private int position;
     private HitDoc blue;
     private HitDoc green;
 
     public Discrepancy() {
     }
 
-    public Discrepancy(HitDoc blue, HitDoc green) {
+    public Discrepancy(int position,HitDoc blue, HitDoc green) {
+        this.position = position;
         this.blue = blue;
         this.green = green;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     public HitDoc getBlue() {

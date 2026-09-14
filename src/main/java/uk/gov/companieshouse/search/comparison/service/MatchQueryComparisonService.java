@@ -9,9 +9,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
@@ -57,8 +59,8 @@ public class MatchQueryComparisonService {
         List<Discrepancy> discrepancies = compareByPosition(blueHits, greenHits);
 
         for (Discrepancy d : discrepancies) {
-            LOGGER.info("Discrepancy found. blue doc_id: "
-                    + (d.getBlue() == null ? "null" : d.getBlue().getDocId())
+            LOGGER.info("Discrepancy found at position " + d.getPosition()
+                    + ". blue doc_id: " + (d.getBlue() == null ? "null" : d.getBlue().getDocId())
                     + ", green doc_id: "
                     + (d.getGreen() == null ? "null" : d.getGreen().getDocId()));
         }
@@ -108,15 +110,15 @@ public class MatchQueryComparisonService {
         int max = Math.max(blueHits.size(), greenHits.size());
         List<Discrepancy> diffs = new ArrayList<>();
 
-        for (int i = 0; i < max; i++) {
-            HitDoc b = i < blueHits.size() ? blueHits.get(i) : null;
-            HitDoc g = i < greenHits.size() ? greenHits.get(i) : null;
+        for (int position = 0; position < max; position++) {
+            HitDoc b = position < blueHits.size() ? blueHits.get(position) : null;
+            HitDoc g = position < greenHits.size() ? greenHits.get(position) : null;
 
             String bId = b == null ? null : b.getDocId();
             String gId = g == null ? null : g.getDocId();
 
             if (!Objects.equals(bId, gId)) {
-                diffs.add(new Discrepancy(b, g));
+                diffs.add(new Discrepancy(position,b, g));
             }
         }
         return diffs;
