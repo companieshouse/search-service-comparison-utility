@@ -9,7 +9,7 @@ variable "aws_profile" {
   description = "The AWS profile name; used as a prefix for Vault secrets"
 }
 
-variable "region" {
+variable "aws_region" {
   type        = string
   description = "The AWS region in which resources will be created"
   default     = "eu-west-2"

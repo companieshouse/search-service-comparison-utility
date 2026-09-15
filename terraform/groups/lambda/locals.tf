@@ -1,22 +1,20 @@
 locals {
-  stack_name                 = "search-service"
-  vault_secrets              = data.vault_generic_secret.configuration.data
+
+  service_name         = "search-service-comparison-utility"
+  stack_name           = "search-service"
+  lambda_function_name = local.service_name
+  kms_alias            = "alias/aws/ssm"
+  json_folder          = "input_json/${var.aws_profile}/${var.environment}"
 
   vpc_name                   = local.stack_secrets["vpc_name"]
+  lambda_vpc_access_subnet_ids = data.aws_subnets.application.ids
+  application_subnet_pattern = local.stack_secrets["application_subnet_pattern"]
 
-  application_subnet_pattern = local.vault_secrets["application_subnet_pattern"]
-  routing_subnet_pattern     = local.vault_secrets["routing_subnet_pattern"]
-
-  lambda_vpc_access_subnet_ids = concat(
-    data.aws_subnets.application.ids,
-    data.aws_subnets.routing.ids
-  )
-
-  json_folder = "input_json/${var.aws_profile}/${var.environment}"
+  additional_iam_policies_json = [data.aws_iam_policy_document.ssm_access_policy.json]
 
   lambda_cloudwatch_event_rules = [
     {
-      name                = "${var.lambda_function_name}-${var.environment}-report"
+      name                = "${local.lambda_function_name}-${var.environment}-report"
       description         = "Trigger Lambda to generate a search comparison report"
       schedule_expression = "cron(0 7 ? * MON-FRI *)"
       target_input        = data.local_file.report.content
@@ -25,9 +23,7 @@ locals {
 
   # Secrets
   stack_secrets        = data.vault_generic_secret.stack_secrets.data
-  stack_secrets_path   = "applications/${var.aws_profile}/${var.environment}/${local.stack_name}-stack"
+  stack_secrets_path   = "applications/${var.aws_profile}/${var.environment}/${local.stack_name}"
   service_secrets      = data.vault_generic_secret.service_secrets.data
-  service_secrets_path = "${local.stack_secrets_path}/${var.lambda_function_name}"
-
-  additional_iam_policies_json = [data.aws_iam_policy_document.ssm_access_policy.json]
+  service_secrets_path = "${local.stack_secrets_path}/search-service-comparison"
 }
