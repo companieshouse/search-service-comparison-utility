@@ -1,29 +1,39 @@
 terraform {
-  required_version = ">= 1.3.0, < 2.0.0"
+  backend "s3" {
+  }
+
+  required_version = ">= 1.3, < 2.0"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.72.0, < 6.0"
+      version = ">= 6.0, < 7.0"
     }
+
     vault = {
       source  = "hashicorp/vault"
       version = ">= 5.0, < 6.0"
     }
   }
-
-  backend "s3" {}
 }
 
 provider "aws" {
-  region  = var.region
+  region = var.aws_region
+}
+
+module "secrets" {
+  source = "git@github.com:companieshouse/terraform-modules//aws/parameter-store?ref=1.0.373"
+
+  name_prefix = local.service_name
+  kms_key_id  = data.aws_kms_key.kms_key.id
+  secrets     = nonsensitive(merge(local.service_secrets, local.stack_secrets))
 }
 
 module "lambda" {
   source = "git@github.com:companieshouse/terraform-modules.git//aws/lambda?ref=1.0.373"
 
   environment            = var.environment
-  function_name          = var.lambda_function_name
+  function_name          = local.lambda_function_name
   lambda_runtime         = var.lambda_runtime
   lambda_handler         = var.lambda_handler_name
 
@@ -35,8 +45,8 @@ module "lambda" {
   lambda_logs_retention_days            = var.lambda_logs_retention_days
 
   lambda_env_vars = {
-    BLUE_SEARCH_CLUSTER_URL             = local.vault_secrets["blue_search_cluster_url"]
-    GREEN_SEARCH_CLUSTER_URL            = local.vault_secrets["green_search_cluster_url"]
+    BLUE_SEARCH_CLUSTER_URL  = local.service_secrets["blue_search_cluster_url"]
+    GREEN_SEARCH_CLUSTER_URL = local.service_secrets["green_search_cluster_url"]
   }
 
   lambda_cloudwatch_event_rules = local.lambda_cloudwatch_event_rules
