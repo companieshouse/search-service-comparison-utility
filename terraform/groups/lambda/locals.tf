@@ -23,7 +23,7 @@ locals {
 
   # Secrets
   stack_secrets        = data.vault_generic_secret.stack_secrets.data
-  stack_secrets_path   = "applications/${var.aws_profile}/${var.environment}/${local.stack_name}"
+  stack_secrets_path   = "applications/${var.aws_profile}/${var.environment}/${local.stack_name}-stack"
   service_secrets      = data.vault_generic_secret.service_secrets.data
-  service_secrets_path = "${local.stack_secrets_path}/search-service-comparison"
+  service_secrets_path = "${local.stack_secrets_path}/${local.service_name}"
 }
