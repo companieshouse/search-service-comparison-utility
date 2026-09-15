@@ -18,6 +18,7 @@ locals {
     {
       name                = "${var.lambda_function_name}-${var.environment}-report"
       description         = "Trigger Lambda to generate a search comparison report"
+      schedule_expression = "cron(0 7 ? * MON-FRI *)"
       target_input        = data.local_file.report.content
     }
   ]
