@@ -17,6 +17,7 @@ import uk.gov.companieshouse.search.comparison.exception.SearchComparisonExcepti
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @Service
 public class MatchQueryComparisonService {
@@ -28,15 +29,6 @@ public class MatchQueryComparisonService {
     private final String blueBaseUrl;
     private final String greenBaseUrl;
 
-
-    // @Value("${search.blue.base-url:http://localhost:9400}")
-//    @Value("${BLUE_SEARCH_CLUSTER_URL}")
-//    private String blueBaseUrl;
-
-    //@Value("${search.green.base-url:http://localhost:9500}")
-//    @Value("${GREEN_SEARCH_CLUSTER_URL}")
-//    private String greenBaseUrl;
-
     public MatchQueryComparisonService(@Value("${BLUE_SEARCH_CLUSTER_URL}") String blueBaseUrl,
                                        @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenBaseUrl,
                                        RestTemplate restTemplate, ObjectMapper objectMapper) {
@@ -46,7 +38,7 @@ public class MatchQueryComparisonService {
         this.objectMapper = objectMapper;
     }
 
-    public Map<String, MatchQueryResult> compare(String query, int size) throws Exception {
+    public Map<String, MatchQueryResult> compare(String query, int size) throws SearchComparisonException {
         JsonNode blue = runSearch(blueBaseUrl, query, size);
         JsonNode green = runSearch(greenBaseUrl, query, size);
 
@@ -74,7 +66,7 @@ public class MatchQueryComparisonService {
         return Collections.singletonMap(key, result);
     }
 
-    private JsonNode runSearch(String baseUrl, String query, int size) throws Exception {
+    private JsonNode runSearch(String baseUrl, String query, int size) throws SearchComparisonException {
         String url = baseUrl + "/alpha_search/_search?pretty";
 
         Map<String, Object> body = new LinkedHashMap<>();
@@ -84,10 +76,26 @@ public class MatchQueryComparisonService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(body), headers);
 
-        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.POST, entity, JsonNode.class);
-        return Objects.requireNonNull(response.getBody());
+        try {
+            String jsonBody = objectMapper.writeValueAsString(body);
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+            ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.POST, entity, JsonNode.class);
+
+            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+                LOGGER.error(String.format("Failed to retrieve records from %s. Status: %s", baseUrl, response.getStatusCode()));
+                throw new SearchComparisonException("Failed to retrieve search results from " + baseUrl);
+            }
+
+            return response.getBody();
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            LOGGER.error(String.format("Error serializing request body for %s: %s", baseUrl, e.getMessage()), e);
+            throw new SearchComparisonException("Failed to serialize search request for " + baseUrl, e);
+        } catch (RestClientException e) {
+            LOGGER.error(String.format("Error querying cluster at %s: %s", baseUrl, e.getMessage()), e);
+            throw new SearchComparisonException("Failed to retrieve search results from " + baseUrl, e);
+        }
+
     }
 
     private List<HitDoc> extractHits(JsonNode root) {
@@ -100,7 +108,7 @@ public class MatchQueryComparisonService {
         for (JsonNode hit : hitsArray) {
             String id = hit.path("_id").asText(null);
             JsonNode sourceNode = hit.path("_source");
-            Map<String, Object> source = objectMapper.convertValue(sourceNode, Map.class);
+            Map<String, Object> source = objectMapper.convertValue(sourceNode, new TypeReference<Map<String, Object>>() {});
             result.add(new HitDoc(id, source));
         }
         return result;
