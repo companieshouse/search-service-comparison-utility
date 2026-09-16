@@ -108,9 +108,7 @@
                 <version>${jacoco-maven-plugin.version}</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/handler/Detail.class</exclude>
-                        <exclude>**/handler/Event.class</exclude>
-                        <exclude>**/handler/SearchComparisonHandler.class</exclude>
+                        <exclude>**/handler/**</exclude>
                         <exclude>**/config/SearchComparisonConfiguration.class</exclude>
                     </excludes>
                 </configuration>
