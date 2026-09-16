@@ -1,40 +1,51 @@
+
 package uk.gov.companieshouse.search.comparison.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.search.comparison.SearchComparisonApplication;
-import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonConfiguration;
+import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
+import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 
-public class SearchComparisonHandler implements RequestStreamHandler {
+public class SearchComparisonHandler implements RequestHandler<Event, Map<String, Object>> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final Logger LOG = LoggerFactory.getLogger("search-service-comparison-utility");
 
-    private static final SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static final DocumentCountService documentCountService;
+    private static final ObjectMapper objectMapper;
 
     static {
-        try {
-            handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(SearchComparisonApplication.class);
-        } catch (ContainerInitializationException e) {
-            LOGGER.error("Error could not initialize application", e);
-            throw new SearchComparisonException("Could not initialize application", e);
+        try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
+            documentCountService = context.getBean(DocumentCountService.class);
+            objectMapper = new ObjectMapper();
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        handler.proxyStream(inputStream, outputStream, context);
+    public Map<String, Object> handleRequest(Event event, Context context) {
+        LOG.info("Starting document comparison");
+        LOG.info("Event received: " + event);
+
+        try {
+            DocumentCountResponse response = documentCountService.getDocumentCounts();
+            LOG.info("Successfully retrieved document counts");
+
+            Map<String, Object> responseMap = objectMapper.convertValue(response, Map.class);
+            return Map.of(
+                    "statusCode", 200,
+                    "body", responseMap
+            );
+        } catch (Exception e) {
+            LOG.error("Error retrieving document counts: " + e.getMessage(), e);
+            return Map.of(
+                    "statusCode", 500,
+                    "error", e.getMessage()
+            );
+        }
     }
 }
