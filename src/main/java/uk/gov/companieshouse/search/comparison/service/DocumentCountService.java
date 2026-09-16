@@ -24,6 +24,8 @@ public class DocumentCountService {
     private final String indexName;
     private final RestTemplate restTemplate;
 
+    private static final String INDEX_NAME = "alpha_search";
+
     public DocumentCountService(String blueSearchClusterUrl, String greenSearchClusterUrl,
                                  String indexName, RestTemplate restTemplate) {
         this.blueSearchClusterUrl = blueSearchClusterUrl;
@@ -34,6 +36,7 @@ public class DocumentCountService {
 
     public DocumentCountResponse getDocumentCounts() {
         LOGGER.info("Fetching document counts from blue and green clusters");
+        LOGGER.info("Index name from configuration: " + indexName);
 
         long blueCount = getDocumentCount(blueSearchClusterUrl, "blue");
         long greenCount = getDocumentCount(greenSearchClusterUrl, "green");
@@ -46,7 +49,7 @@ public class DocumentCountService {
 
     private long getDocumentCount(String baseUrl, String clusterName) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
-            .pathSegment(indexName, "_search")
+            .pathSegment(INDEX_NAME, "_search")
             .toUriString();
 
         HttpHeaders headers = new HttpHeaders();
