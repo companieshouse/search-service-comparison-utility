@@ -20,8 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
-import uk.gov.companieshouse.search.comparison.model.SearchResponse;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentCountServiceTest {
@@ -43,20 +43,20 @@ class DocumentCountServiceTest {
 
     @Test
     void testGetDocumentCounts() {
-        var blueSearchResponse = new SearchResponse(new SearchResponse.Hits(new SearchResponse.Total(1234, "eq")));
-        var greenSearchResponse = new SearchResponse(new SearchResponse.Hits(new SearchResponse.Total(5678, "eq")));
+        var blueCountResponse = new CountResponse(1234);
+        var greenCountResponse = new CountResponse(5678);
 
-        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
-            eq(SearchResponse.class)))
-            .thenReturn(ResponseEntity.ok(blueSearchResponse));
+            eq(CountResponse.class)))
+            .thenReturn(ResponseEntity.ok(blueCountResponse));
 
-        when(restTemplate.exchange(eq("http://localhost:9201/alpha_search/_search"),
+        when(restTemplate.exchange(eq("http://localhost:9201/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
-            eq(SearchResponse.class)))
-            .thenReturn(ResponseEntity.ok(greenSearchResponse));
+            eq(CountResponse.class)))
+            .thenReturn(ResponseEntity.ok(greenCountResponse));
 
         DocumentCountResponse response = client.getDocumentCounts();
 
@@ -67,10 +67,10 @@ class DocumentCountServiceTest {
 
     @Test
     void testGetDocumentCountsThrowsWhenClusterReturnsNonOkStatus() {
-        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
-            eq(SearchResponse.class)))
+            eq(CountResponse.class)))
             .thenReturn(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
 
         SearchComparisonException exception = assertThrows(
@@ -81,10 +81,10 @@ class DocumentCountServiceTest {
 
     @Test
     void testGetDocumentCountsThrowsWhenClusterReturnsNullBody() {
-        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
-            eq(SearchResponse.class)))
+            eq(CountResponse.class)))
             .thenReturn(ResponseEntity.ok(null));
 
         SearchComparisonException exception = assertThrows(
@@ -95,10 +95,10 @@ class DocumentCountServiceTest {
 
     @Test
     void testGetDocumentCountsThrowsWhenRestClientFails() {
-        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search"),
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
-            eq(SearchResponse.class)))
+            eq(CountResponse.class)))
             .thenThrow(new ResourceAccessException("Connection refused"));
 
         SearchComparisonException exception = assertThrows(
