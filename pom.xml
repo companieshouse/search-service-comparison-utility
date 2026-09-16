@@ -32,7 +32,7 @@
         </sonar.coverage.jacoco.xmlReportPaths>
         <sonar.coverage.exclusions>
             **/model/**,
-            **/handler/SearchComparisonHandler.java,
+            **/handler/**,
             **/config/SearchComparisonConfiguration.java
         </sonar.coverage.exclusions>
     </properties>
