@@ -42,7 +42,7 @@ public class SearchComparisonController {
 
     @GetMapping("/match-query")
     public ResponseEntity<Map<String, MatchQueryResult>> compareMatchQuery(
-            @RequestParam("query") String query,
+            @RequestParam(value = "query", defaultValue = "GIRLSDAYSCHOOLTRUST") String query,
             @RequestParam(value = "size", defaultValue = "40") int size) {
         LOGGER.info("Compare match query for ordered alpha key: " + query);
         try {

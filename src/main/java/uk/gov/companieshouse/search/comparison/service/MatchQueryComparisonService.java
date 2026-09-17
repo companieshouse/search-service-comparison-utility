@@ -48,6 +48,8 @@ public class MatchQueryComparisonService {
         int blueTotal = blue.path("hits").path("total").path("value").asInt(0);
         int greenTotal = green.path("hits").path("total").path("value").asInt(0);
 
+        LOGGER.info(String.format("Match query search results for query [%s]: Blue count=%d, Green count=%d", query, blueTotal, greenTotal));
+
         List<Discrepancy> discrepancies = compareByPosition(blueHits, greenHits);
 
         for (Discrepancy d : discrepancies) {
