@@ -21,7 +21,7 @@ data "aws_subnets" "application" {
   }
 
   filter {
-    name = "tag:Name"
+    name   = "tag:Name"
     values = [local.application_subnet_pattern]
   }
 }
@@ -48,4 +48,19 @@ data "aws_iam_policy_document" "ssm_access_policy" {
 
 data "local_file" "report" {
   filename = "${local.json_folder}/report.json"
+}
+
+data "aws_opensearch_domain" "opensearch" {
+  for_each = toset(var.opensearch_domain_names)
+
+  domain_name = "${var.environment}-${each.value}"
+}
+
+data "aws_iam_policy_document" "opensearch_access_policy" {
+  statement {
+    sid       = "AllowOpenSearchReadAccess"
+    effect    = "Allow"
+    actions   = ["es:ESHttpGet", "es:ESHttpPost", "es:ESHttpHead"]
+    resources = [for domain in data.aws_opensearch_domain.opensearch : "${domain.arn}/*"]
+  }
 }
