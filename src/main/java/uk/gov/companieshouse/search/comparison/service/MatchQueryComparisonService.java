@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class MatchQueryComparisonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
-    private static final int MAX_DISCREPANCIES = 2;
+    private static final int MAX_DISCREPANCIES = 10;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -49,26 +49,11 @@ public class MatchQueryComparisonService {
         int blueTotal = blue.path("hits").path("total").path("value").asInt(0);
         int greenTotal = green.path("hits").path("total").path("value").asInt(0);
 
-//        LOGGER.info(String.format("Match query search results for query [%s]: Blue count=%d, Green count=%d", query, blueTotal, greenTotal));
-
         List<Discrepancy> allDiscrepancies = compareByPosition(blueHits, greenHits);
         int totalDiscrepancies = allDiscrepancies.size();
         List<Discrepancy> displayedDiscrepancies = allDiscrepancies.stream()
                 .limit(MAX_DISCREPANCIES)
                 .toList();
-
-//        LOGGER.info("Total discrepancies found: " + totalDiscrepancies);
-//        LOGGER.info(String.format(
-//                "Total discrepancies found: %d. Returning first %d discrepancies.",
-//                totalDiscrepancies,
-//                Math.min(totalDiscrepancies, MAX_DISCREPANCIES)));
-//        LOGGER.info(String.format(
-//                "Match query search results for query [%s]: Blue count=%d, Green count=%d, Total discrepancies found=%d, Returning first %d discrepancies",
-//                query,
-//                blueTotal,
-//                greenTotal,
-//                totalDiscrepancies,
-//                Math.min(totalDiscrepancies, MAX_DISCREPANCIES)));
 
         LOGGER.info(String.format(
                 "Match query search results for query [%s]: Blue count=%d, Green count=%d, Total discrepancies=%d, Displayed discrepancies=%d",
@@ -154,7 +139,7 @@ public class MatchQueryComparisonService {
             String gId = g == null ? null : g.getDocId();
 
             if (!Objects.equals(bId, gId)) {
-                diffs.add(new Discrepancy(position,b, g));
+                diffs.add(new Discrepancy(position, b, g));
             }
         }
         return diffs;
