@@ -75,3 +75,9 @@ variable "network_state_bucket_key" {
   type        = string
   description = "The key name used when constructing the path to the application network remote state in the S3 bucket"
 }
+
+variable "opensearch_domain_names" {
+  type        = list(string)
+  default     = ["alphabetical-search"]
+  description = "The names of the OpenSearch domains to which the Lambda function needs access."
+}

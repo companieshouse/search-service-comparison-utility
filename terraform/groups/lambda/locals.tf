@@ -6,11 +6,11 @@ locals {
   kms_alias            = "alias/aws/ssm"
   json_folder          = "input_json/${var.aws_profile}/${var.environment}"
 
-  vpc_name                   = local.stack_secrets["vpc_name"]
+  vpc_name                     = local.stack_secrets["vpc_name"]
   lambda_vpc_access_subnet_ids = data.aws_subnets.application.ids
-  application_subnet_pattern = local.stack_secrets["application_subnet_pattern"]
+  application_subnet_pattern   = local.stack_secrets["application_subnet_pattern"]
 
-  additional_iam_policies_json = [data.aws_iam_policy_document.ssm_access_policy.json]
+  additional_iam_policies_json = [data.aws_iam_policy_document.ssm_access_policy.json, data.aws_iam_policy_document.opensearch_access_policy.json]
 
   lambda_cloudwatch_event_rules = [
     {
