@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class MatchQueryComparisonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final int MAX_DISCREPANCIES = 2;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -48,11 +49,36 @@ public class MatchQueryComparisonService {
         int blueTotal = blue.path("hits").path("total").path("value").asInt(0);
         int greenTotal = green.path("hits").path("total").path("value").asInt(0);
 
-        LOGGER.info(String.format("Match query search results for query [%s]: Blue count=%d, Green count=%d", query, blueTotal, greenTotal));
+//        LOGGER.info(String.format("Match query search results for query [%s]: Blue count=%d, Green count=%d", query, blueTotal, greenTotal));
 
-        List<Discrepancy> discrepancies = compareByPosition(blueHits, greenHits);
+        List<Discrepancy> allDiscrepancies = compareByPosition(blueHits, greenHits);
+        int totalDiscrepancies = allDiscrepancies.size();
+        List<Discrepancy> displayedDiscrepancies = allDiscrepancies.stream()
+                .limit(MAX_DISCREPANCIES)
+                .toList();
 
-        for (Discrepancy d : discrepancies) {
+//        LOGGER.info("Total discrepancies found: " + totalDiscrepancies);
+//        LOGGER.info(String.format(
+//                "Total discrepancies found: %d. Returning first %d discrepancies.",
+//                totalDiscrepancies,
+//                Math.min(totalDiscrepancies, MAX_DISCREPANCIES)));
+//        LOGGER.info(String.format(
+//                "Match query search results for query [%s]: Blue count=%d, Green count=%d, Total discrepancies found=%d, Returning first %d discrepancies",
+//                query,
+//                blueTotal,
+//                greenTotal,
+//                totalDiscrepancies,
+//                Math.min(totalDiscrepancies, MAX_DISCREPANCIES)));
+
+        LOGGER.info(String.format(
+                "Match query search results for query [%s]: Blue count=%d, Green count=%d, Total discrepancies=%d, Displayed discrepancies=%d",
+                query,
+                blueTotal,
+                greenTotal,
+                totalDiscrepancies,
+                displayedDiscrepancies.size()));
+
+        for (Discrepancy d : displayedDiscrepancies) {
             LOGGER.info("Discrepancy found at position " + d.getPosition()
                     + ". blue doc_id: " + (d.getBlue() == null ? "null" : d.getBlue().getDocId())
                     + ", green doc_id: "
@@ -62,7 +88,7 @@ public class MatchQueryComparisonService {
         MatchQueryResult result = new MatchQueryResult();
         result.setBlueTotal(blueTotal);
         result.setGreenTotal(greenTotal);
-        result.setDiscrepancies(discrepancies);
+        result.setDiscrepancies(displayedDiscrepancies);
 
         String key = "match_query_" + query;
         return Collections.singletonMap(key, result);
