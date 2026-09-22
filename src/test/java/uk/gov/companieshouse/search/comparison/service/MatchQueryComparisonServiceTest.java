@@ -79,6 +79,7 @@ class MatchQueryComparisonServiceTest {
         MatchQueryResult matchResult = result.get("match_query_" + query);
         assertEquals(1, matchResult.getBlueTotal());
         assertEquals(1, matchResult.getGreenTotal());
+        assertEquals(0, matchResult.getTotalDiscrepancies());
         assertTrue(matchResult.getDiscrepancies().isEmpty());
     }
 
@@ -114,6 +115,7 @@ class MatchQueryComparisonServiceTest {
         MatchQueryResult matchResult = result.get("match_query_" + query);
         assertEquals(1, matchResult.getBlueTotal());
         assertEquals(1, matchResult.getGreenTotal());
+        assertEquals(1, matchResult.getTotalDiscrepancies());
         assertEquals(1, matchResult.getDiscrepancies().size());
         assertEquals(0, matchResult.getDiscrepancies().get(0).getPosition());
         assertEquals("123", matchResult.getDiscrepancies().get(0).getBlue().getDocId());
@@ -150,6 +152,7 @@ class MatchQueryComparisonServiceTest {
         MatchQueryResult matchResult = result.get("match_query_" + query);
         assertEquals(0, matchResult.getBlueTotal());
         assertEquals(0, matchResult.getGreenTotal());
+        assertEquals(0, matchResult.getTotalDiscrepancies());
         assertTrue(matchResult.getDiscrepancies().isEmpty());
     }
 
@@ -184,6 +187,7 @@ class MatchQueryComparisonServiceTest {
         MatchQueryResult matchResult = result.get("match_query_" + query);
         assertEquals(1, matchResult.getBlueTotal());
         assertEquals(0, matchResult.getGreenTotal());
+        assertEquals(1, matchResult.getTotalDiscrepancies());
         assertEquals(1, matchResult.getDiscrepancies().size());
         assertEquals(0, matchResult.getDiscrepancies().get(0).getPosition());
         assertNotNull(matchResult.getDiscrepancies().get(0).getBlue());

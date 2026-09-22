@@ -43,7 +43,7 @@ class SearchComparisonControllerTest {
 
     @Test
     void testCompareMatchQuery() throws Exception {
-        String query = "GIRLSDAYSCHOOLTRUST";
+        String query = "TESTCOMPANY";
         int size = 40;
 
        // var discrepancies = new java.util.ArrayList<>();
@@ -52,6 +52,7 @@ class SearchComparisonControllerTest {
         var matchResult = new MatchQueryResult();
         matchResult.setBlueTotal(1);
         matchResult.setGreenTotal(1);
+        matchResult.setTotalDiscrepancies(0);
         matchResult.setDiscrepancies(discrepancies);
 
         var response = java.util.Collections.singletonMap("match_query_" + query, matchResult);
@@ -63,17 +64,19 @@ class SearchComparisonControllerTest {
                         .param("size", String.valueOf(size)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(1)))
-                .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)));
+                .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)))
+                .andExpect(jsonPath("$.match_query_" + query + ".total_discrepancies", is(0)));
     }
 
     @Test
     void testCompareMatchQueryWithDefaultParameters() throws Exception {
-        String query = "GIRLSDAYSCHOOLTRUST";
+        String query = "GIRLONTHEGROUND";
         int size = 40;
 
         var matchResult = new MatchQueryResult();
         matchResult.setBlueTotal(1);
         matchResult.setGreenTotal(1);
+        matchResult.setTotalDiscrepancies(0);
         matchResult.setDiscrepancies(new java.util.ArrayList<>());
 
         var response = java.util.Collections.singletonMap("match_query_" + query, matchResult);
@@ -83,12 +86,13 @@ class SearchComparisonControllerTest {
         mockMvc.perform(get("/documents/match-query"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(1)))
-                .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)));
+                .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)))
+                .andExpect(jsonPath("$.match_query_" + query + ".total_discrepancies", is(0)));
     }
 
     @Test
     void testCompareMatchQueryReturnsInternalServerErrorOnException() throws Exception {
-        String query = "GIRLSDAYSCHOOLTRUST";
+        String query = "TESTCOMPANY";
         int size = 40;
 
         when(matchQueryComparisonService.compare(query, size))

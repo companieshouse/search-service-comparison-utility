@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.search.comparison.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,9 @@ public class MatchQueryResult {
 
     @JsonProperty("green_total")
     private int greenTotal;
+
+    @JsonProperty("total_discrepancies")
+    private int totalDiscrepancies;
 
     private List<Discrepancy> discrepancies = new ArrayList<>();
 
@@ -28,6 +32,14 @@ public class MatchQueryResult {
 
     public void setGreenTotal(int greenTotal) {
         this.greenTotal = greenTotal;
+    }
+
+    public int getTotalDiscrepancies() {
+        return totalDiscrepancies;
+    }
+
+    public void setTotalDiscrepancies(int totalDiscrepancies) {
+        this.totalDiscrepancies = totalDiscrepancies;
     }
 
     public List<Discrepancy> getDiscrepancies() {

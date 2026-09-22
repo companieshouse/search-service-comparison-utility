@@ -73,6 +73,7 @@ public class MatchQueryComparisonService {
         MatchQueryResult result = new MatchQueryResult();
         result.setBlueTotal(blueTotal);
         result.setGreenTotal(greenTotal);
+        result.setTotalDiscrepancies(totalDiscrepancies);
         result.setDiscrepancies(displayedDiscrepancies);
 
         String key = "match_query_" + query;
