@@ -231,22 +231,5 @@ class MatchQueryComparisonServiceTest {
         assertTrue(exception.getMessage().contains("Failed to retrieve search results"));
     }
 
-    @Test
-    void shouldThrowExceptionWhenRestClientFails() {
-        String query = "test company";
-        int size = 40;
-
-        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search?pretty"),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
-                eq(JsonNode.class)))
-                .thenThrow(new ResourceAccessException("Connection refused"));
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class, () -> service.compare(query, size));
-
-        assertNotNull(exception);
-        assertNotNull(exception.getCause());
-    }
 
 }

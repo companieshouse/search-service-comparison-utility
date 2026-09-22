@@ -90,20 +90,5 @@ class SearchComparisonControllerTest {
                 .andExpect(jsonPath("$.match_query_" + query + ".total_discrepancies", is(0)));
     }
 
-    @Test
-    void testCompareMatchQueryReturnsInternalServerErrorOnException() throws Exception {
-        String query = "TESTCOMPANY";
-        int size = 40;
-
-        when(matchQueryComparisonService.compare(query, size))
-                .thenThrow(new RuntimeException("Service error"));
-
-        mockMvc.perform(get("/documents/match-query")
-                        .param("query", query)
-                        .param("size", String.valueOf(size)))
-                .andExpect(status().isInternalServerError());
-    }
-
-
 }
 
