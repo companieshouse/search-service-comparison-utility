@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
 @Configuration
+@PropertySource("classpath:application.properties")
 public class SearchComparisonConfiguration {
 
     @Value("${BLUE_SEARCH_CLUSTER_URL}")
@@ -19,6 +22,11 @@ public class SearchComparisonConfiguration {
 
     @Value("${search.index-name}")
     private String indexName;
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
     @Bean
     public RestTemplate restTemplate() {
@@ -39,5 +47,4 @@ public class SearchComparisonConfiguration {
 //    public MatchQueryComparisonService matchQueryComparisonService(RestTemplate restTemplate, ObjectMapper objectMapper) {
 //        return new MatchQueryComparisonService(blueSearchClusterUrl, greenSearchClusterUrl, restTemplate, objectMapper);
 //    }
-
 }

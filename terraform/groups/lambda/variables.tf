@@ -9,7 +9,7 @@ variable "aws_profile" {
   description = "The AWS profile name; used as a prefix for Vault secrets"
 }
 
-variable "region" {
+variable "aws_region" {
   type        = string
   description = "The AWS region in which resources will be created"
   default     = "eu-west-2"
@@ -29,8 +29,7 @@ variable "lambda_function_name" {
 variable "lambda_handler_name" {
   type        = string
   description = "The lambda function entrypoint"
-  # TODO - UPDATE THIS
-  #default     = "uk.gov.companieshouse.efs.documentconverter.DocumentMessageHandler::handleRequest" 
+  default     = "uk.gov.companieshouse.search.comparison.handler.SearchComparisonHandler"
 }
 
 variable "lambda_logs_retention_days" {
@@ -75,4 +74,10 @@ variable "network_state_bucket_name" {
 variable "network_state_bucket_key" {
   type        = string
   description = "The key name used when constructing the path to the application network remote state in the S3 bucket"
+}
+
+variable "opensearch_domain_names" {
+  type        = list(string)
+  default     = ["alphabetical-search"]
+  description = "The names of the OpenSearch domains to which the Lambda function needs access."
 }

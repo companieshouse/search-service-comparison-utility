@@ -12,8 +12,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
-import uk.gov.companieshouse.search.comparison.model.SearchResponse;
 
 public class DocumentCountService {
 
@@ -46,25 +46,27 @@ public class DocumentCountService {
 
     private long getDocumentCount(String baseUrl, String clusterName) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
-            .pathSegment(indexName, "_search")
+            .pathSegment(indexName, "_count")
             .toUriString();
+
+        LOGGER.info(String.format("Querying document count for %s cluster using URL: %s", clusterName, url));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<SearchResponse> response = restTemplate.exchange(
-                url, HttpMethod.GET, requestEntity, SearchResponse.class);
+            ResponseEntity<CountResponse> response = restTemplate.exchange(
+                url, HttpMethod.GET, requestEntity, CountResponse.class);
 
-            SearchResponse body = response.getBody();
+            CountResponse body = response.getBody();
             if (response.getStatusCode() != HttpStatus.OK || body == null) {
                 LOGGER.error(String.format("Failed to get document count from %s cluster. Status: %s",
                     clusterName, response.getStatusCode()));
                 throw new SearchComparisonException("Failed to get document count from " + clusterName);
             }
 
-            long count = body.hits().total().value();
+            long count = body.count();
             LOGGER.info(String.format("Document count from %s cluster: %d", clusterName, count));
             return count;
         } catch (RestClientException e) {
