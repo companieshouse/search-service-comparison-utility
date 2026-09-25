@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.search.comparison.config;
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,10 @@ public class SearchComparisonConfiguration {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getInterceptors()
+            .add(new AwsSigningInterceptor(DefaultAWSCredentialsProviderChain.getInstance()));
+        return restTemplate;
     }
 
     @Bean

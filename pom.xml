@@ -69,6 +69,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws-java-sdk-s3.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-springboot3</artifactId>
             <version>${aws-serverless-java-container-springboot3.version}</version>
