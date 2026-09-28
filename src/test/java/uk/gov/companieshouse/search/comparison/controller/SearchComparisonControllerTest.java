@@ -17,6 +17,9 @@ import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @WebMvcTest(SearchComparisonController.class)
 class SearchComparisonControllerTest {
 
@@ -46,8 +49,7 @@ class SearchComparisonControllerTest {
         String query = "TESTCOMPANY";
         int size = 40;
 
-       // var discrepancies = new java.util.ArrayList<>();
-        var discrepancies = new java.util.ArrayList<Discrepancy>();
+        List<Discrepancy> discrepancies = new ArrayList<>();
 
         var matchResult = new MatchQueryResult();
         matchResult.setBlueTotal(1);

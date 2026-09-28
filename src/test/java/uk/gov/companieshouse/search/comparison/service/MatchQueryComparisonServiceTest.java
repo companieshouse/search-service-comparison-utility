@@ -2,6 +2,7 @@ package uk.gov.companieshouse.search.comparison.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,7 +20,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
@@ -192,7 +192,7 @@ class MatchQueryComparisonServiceTest {
         assertEquals(0, matchResult.getDiscrepancies().get(0).getPosition());
         assertNotNull(matchResult.getDiscrepancies().get(0).getBlue());
         assertEquals("123", matchResult.getDiscrepancies().get(0).getBlue().getDocId());
-        assertTrue(matchResult.getDiscrepancies().get(0).getGreen() == null);
+        assertNull(matchResult.getDiscrepancies().get(0).getGreen());
     }
 
     @Test
