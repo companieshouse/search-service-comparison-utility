@@ -11,6 +11,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonConfiguration;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
+import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
 public class SearchComparisonHandler implements RequestHandler<Event, Map<String, Object>> {
 
@@ -18,10 +19,12 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
 
     private static final DocumentCountService documentCountService;
     private static final ObjectMapper objectMapper;
+    private static MatchQueryComparisonService matchQueryComparisonService;
 
     static {
         try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
             documentCountService = context.getBean(DocumentCountService.class);
+            matchQueryComparisonService = context.getBean(MatchQueryComparisonService.class);
             objectMapper = new ObjectMapper();
         }
     }
@@ -32,10 +35,27 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
         LOG.info("Event received: " + event);
 
         try {
-            DocumentCountResponse response = documentCountService.getDocumentCounts();
-            LOG.info("Successfully retrieved document counts");
+            Map<String, Object> responseMap;
+            String operation = event.getDetail().getOperation();
+            String query = event.getDetail().getQuery();
+            int size = event.getDetail().getSize();
 
-            Map<String, Object> responseMap = objectMapper.convertValue(response, Map.class);
+            LOG.info(String.format("Operation: %s, Query: %s, Size: %d", operation, query, size));
+
+            // Route to appropriate service based on event type
+            if ("match-query".equals(operation)) {
+                LOG.info("Executing match-query comparison");
+                var result = matchQueryComparisonService.compare(query, size);
+                LOG.info("Successfully compared match query");
+                responseMap = objectMapper.convertValue(result, Map.class);
+            } else {
+                // Default: document counts
+                LOG.info("Executing document count retrieval");
+                DocumentCountResponse response = documentCountService.getDocumentCounts();
+                LOG.info("Successfully retrieved document counts");
+                responseMap = objectMapper.convertValue(response, Map.class);
+            }
+            LOG.info("Returning successful response with status 200");
             return Map.of(
                     "statusCode", 200,
                     "body", responseMap
