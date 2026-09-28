@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import java.net.URI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,12 +16,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.mock.http.client.MockClientHttpRequest;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 @ExtendWith(MockitoExtension.class)
 class AwsSigningInterceptorTest {
 
     @Mock
-    private AWSCredentialsProvider credentialsProvider;
+    private AwsCredentialsProvider credentialsProvider;
 
     @Mock
     private ClientHttpRequestExecution httpRequestExecution;
@@ -46,8 +46,8 @@ class AwsSigningInterceptorTest {
 
     @Test
     void shouldInterceptAndSignsRequest() throws Exception {
-        AWSCredentials credentials = new BasicAWSCredentials("access-key", "secret-key");
-        when(credentialsProvider.getCredentials()).thenReturn(credentials);
+        AwsCredentials credentials = AwsBasicCredentials.create("access-key", "secret-key");
+        when(credentialsProvider.resolveCredentials()).thenReturn(credentials);
 
         MockClientHttpRequest request = new MockClientHttpRequest(
             HttpMethod.GET,
@@ -56,9 +56,9 @@ class AwsSigningInterceptorTest {
 
         when(httpRequestExecution.execute(request, body)).thenReturn(expectedResponse);
 
-        ClientHttpResponse actualResponse = interceptor.intercept(request, body, httpRequestExecution);
-
-        assertNotNull(actualResponse);
+        try (ClientHttpResponse actualResponse = interceptor.intercept(request, body, httpRequestExecution)) {
+            assertNotNull(actualResponse);
+        }
         verify(httpRequestExecution).execute(request, body);
 
         String authorizationHeader = request.getHeaders().getFirst("Authorization");

@@ -1,18 +1,22 @@
 package uk.gov.companieshouse.search.comparison.config;
 
-import com.amazonaws.DefaultRequest;
-import com.amazonaws.auth.AWS4Signer;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.http.HttpMethodName;
-import com.amazonaws.regions.DefaultAwsRegionProviderChain;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.http.ContentStreamProvider;
+import software.amazon.awssdk.http.SdkHttpRequest;
+import software.amazon.awssdk.http.SdkHttpMethod;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4FamilyHttpSigner;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.SignRequest;
+import software.amazon.awssdk.http.auth.spi.signer.SignedRequest;
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 
 /**
  * Signs outgoing HTTP requests with AWS SigV4 so that calls to an IAM-access-controlled
@@ -23,31 +27,34 @@ public class AwsSigningInterceptor implements ClientHttpRequestInterceptor {
 
     private static final String SERVICE_NAME = "es";
 
-    private final AWSCredentialsProvider credentialsProvider;
-    private final DefaultAwsRegionProviderChain regionProviderChain = new DefaultAwsRegionProviderChain();
+    private final AwsCredentialsProvider credentialsProvider;
+    private final DefaultAwsRegionProviderChain regionProviderChain = DefaultAwsRegionProviderChain.builder().build();
 
-    public AwsSigningInterceptor(AWSCredentialsProvider credentialsProvider) {
+    public AwsSigningInterceptor(AwsCredentialsProvider credentialsProvider) {
         this.credentialsProvider = credentialsProvider;
     }
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
-        URI uri = request.getURI();
+        SdkHttpRequest unsignedRequest = SdkHttpRequest.builder()
+                .method(SdkHttpMethod.fromValue(request.getMethod().name()))
+                .uri(request.getURI())
+                .build();
 
-        DefaultRequest<Void> signableRequest = new DefaultRequest<>(SERVICE_NAME);
-        signableRequest.setHttpMethod(HttpMethodName.fromValue(request.getMethod().name()));
-        signableRequest.setEndpoint(URI.create(uri.getScheme() + "://" + uri.getAuthority()));
-        signableRequest.setResourcePath(uri.getRawPath());
-        signableRequest.setContent(new ByteArrayInputStream(body));
+        AwsCredentials credentials = credentialsProvider.resolveCredentials();
 
-        AWS4Signer signer = new AWS4Signer();
-        signer.setServiceName(SERVICE_NAME);
-        signer.setRegionName(regionProviderChain.getRegion());
-        signer.sign(signableRequest, credentialsProvider.getCredentials());
+        SignRequest<AwsCredentials> signRequest = SignRequest.builder(credentials)
+                .request(unsignedRequest)
+                .payload(ContentStreamProvider.fromByteArray(body))
+                .putProperty(AwsV4HttpSigner.REGION_NAME, regionProviderChain.getRegion().id())
+                .putProperty(AwsV4FamilyHttpSigner.SERVICE_SIGNING_NAME, SERVICE_NAME)
+                .build();
 
-        for (Map.Entry<String, String> header : signableRequest.getHeaders().entrySet()) {
-            request.getHeaders().set(header.getKey(), header.getValue());
+        SignedRequest signedRequest = AwsV4HttpSigner.create().sign(signRequest);
+
+        for (Map.Entry<String, List<String>> header : signedRequest.request().headers().entrySet()) {
+            request.getHeaders().put(header.getKey(), header.getValue());
         }
 
         return execution.execute(request, body);
