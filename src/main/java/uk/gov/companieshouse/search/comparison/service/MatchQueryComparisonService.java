@@ -39,8 +39,12 @@ public class MatchQueryComparisonService {
     }
 
     public Map<String, MatchQueryResult> compare(String query, int size) throws SearchComparisonException {
-        JsonNode blue = runSearch(blueBaseUrl, query, size);
-        JsonNode green = runSearch(greenBaseUrl, query, size);
+        JsonNode blue = Objects.requireNonNull(
+                runSearch(blueBaseUrl, query, size),
+                "Blue search result cannot be null");
+        JsonNode green = Objects.requireNonNull(
+                runSearch(greenBaseUrl, query, size),
+                "Green search result cannot be null");
 
         List<HitDoc> blueHits = extractHits(blue);
         List<HitDoc> greenHits = extractHits(green);
@@ -95,12 +99,15 @@ public class MatchQueryComparisonService {
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
             ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.POST, entity, JsonNode.class);
 
-            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            JsonNode responseBody = response.getBody();
+
+            if (response.getStatusCode() != HttpStatus.OK || responseBody == null) {
                 LOGGER.error(String.format("Failed to retrieve records from %s. Status: %s", baseUrl, response.getStatusCode()));
                 throw new SearchComparisonException("Failed to retrieve search results from " + baseUrl);
             }
 
-            return response.getBody();
+            return responseBody;
+
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             LOGGER.error(String.format("Error serializing request body for %s: %s", baseUrl, e.getMessage()), e);
             throw new SearchComparisonException("Failed to serialize search request for " + baseUrl, e);
@@ -112,6 +119,10 @@ public class MatchQueryComparisonService {
     }
 
     private List<HitDoc> extractHits(JsonNode root) {
+        if (root == null) {
+            return List.of();
+        }
+
         JsonNode hitsArray = root.path("hits").path("hits");
         if (!hitsArray.isArray()) {
             return List.of();
