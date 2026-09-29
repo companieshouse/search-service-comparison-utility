@@ -16,6 +16,9 @@ import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonServi
 public class SearchComparisonHandler implements RequestHandler<Event, Map<String, Object>> {
 
     private static final Logger LOG = LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final String STATUS_CODE = "statusCode";
+    private static final String ERROR = "error";
+    private static final String BODY = "body";
 
     private static final DocumentCountService documentCountService;
     private static final ObjectMapper objectMapper;
@@ -38,7 +41,7 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
 
             if (event.getDetail() == null) {
                 LOG.error("Event detail is missing");
-                return Map.of("statusCode", 400, "error", "Event detail is required");
+                return Map.of(STATUS_CODE, 400, ERROR, "Event detail is required");
             }
 
             Map<String, Object> responseMap;
@@ -51,7 +54,7 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
 
                 if (query == null || query.isEmpty() || size <= 0) {
                     LOG.error("Query and size are required for match-query operation");
-                    return Map.of("statusCode", 400, "error", "Query and size are required");
+                    return Map.of(STATUS_CODE, 400, ERROR, "Query and size are required");
                 }
 
                 LOG.info(String.format("Operation: %s, Query: %s, Size: %d", operation, query, size));
@@ -68,14 +71,14 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
             }
             LOG.info("Returning successful response with status 200");
             return Map.of(
-                    "statusCode", 200,
-                    "body", responseMap
+                    STATUS_CODE, 200,
+                    BODY, responseMap
             );
         } catch (Exception e) {
             LOG.error("Error retrieving document counts: " + e.getMessage(), e);
             return Map.of(
-                    "statusCode", 500,
-                    "error", e.getMessage()
+                    STATUS_CODE, 500,
+                    ERROR, e.getMessage()
             );
         }
     }
