@@ -19,7 +19,7 @@
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <spring-boot.version>3.5.14</spring-boot.version>
-        <aws-java-sdk-s3.version>1.12.797</aws-java-sdk-s3.version>
+        <aws-sdk-v2.version>2.47.6</aws-sdk-v2.version>
         <aws-serverless-java-container-springboot3.version>2.1.5</aws-serverless-java-container-springboot3.version>
         <structured-logging.version>3.0.57</structured-logging.version>
 
@@ -46,6 +46,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk-v2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -57,16 +64,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${aws-java-sdk-s3.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>software.amazon.ion</groupId>
-                    <artifactId>ion-java</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>compile</scope>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-auth-aws</artifactId>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>

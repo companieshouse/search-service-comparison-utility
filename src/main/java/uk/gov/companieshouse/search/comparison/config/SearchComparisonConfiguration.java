@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 
 
@@ -29,7 +30,10 @@ public class SearchComparisonConfiguration {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getInterceptors()
+            .add(new AwsSigningInterceptor(DefaultCredentialsProvider.builder().build()));
+        return restTemplate;
     }
 
     @Bean
