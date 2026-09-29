@@ -19,7 +19,7 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
 
     private static final DocumentCountService documentCountService;
     private static final ObjectMapper objectMapper;
-    private static MatchQueryComparisonService matchQueryComparisonService;
+    private static final MatchQueryComparisonService matchQueryComparisonService;
 
     static {
         try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
@@ -35,15 +35,26 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
         LOG.info("Event received: " + event);
 
         try {
+
+            if (event.getDetail() == null) {
+                LOG.error("Event detail is missing");
+                return Map.of("statusCode", 400, "error", "Event detail is required");
+            }
+
             Map<String, Object> responseMap;
             String operation = event.getDetail().getOperation();
-            String query = event.getDetail().getQuery();
-            int size = event.getDetail().getSize();
-
-            LOG.info(String.format("Operation: %s, Query: %s, Size: %d", operation, query, size));
 
             // Route to appropriate service based on event type
             if ("match-query".equals(operation)) {
+                String query = event.getDetail().getQuery();
+                int size = event.getDetail().getSize();
+
+                if (query == null || query.isEmpty() || size <= 0) {
+                    LOG.error("Query and size are required for match-query operation");
+                    return Map.of("statusCode", 400, "error", "Query and size are required");
+                }
+
+                LOG.info(String.format("Operation: %s, Query: %s, Size: %d", operation, query, size));
                 LOG.info("Executing match-query comparison");
                 var result = matchQueryComparisonService.compare(query, size);
                 LOG.info("Successfully compared match query");
