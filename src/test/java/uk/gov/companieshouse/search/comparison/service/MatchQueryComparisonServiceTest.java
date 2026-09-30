@@ -41,6 +41,7 @@ class MatchQueryComparisonServiceTest {
         service = new MatchQueryComparisonService(
                 "http://localhost:9200",
                 "http://localhost:9201",
+                "alpha_search",
                 restTemplate,
                 objectMapper
         );

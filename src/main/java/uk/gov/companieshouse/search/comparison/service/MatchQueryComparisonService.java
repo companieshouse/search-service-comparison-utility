@@ -17,6 +17,7 @@ import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 public class MatchQueryComparisonService {
@@ -28,12 +29,15 @@ public class MatchQueryComparisonService {
     private final ObjectMapper objectMapper;
     private final String blueBaseUrl;
     private final String greenBaseUrl;
+    private final String indexName;
 
     public MatchQueryComparisonService(@Value("${BLUE_SEARCH_CLUSTER_URL}") String blueBaseUrl,
                                        @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenBaseUrl,
+                                       @Value("${search.index-name}") String indexName,
                                        RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.blueBaseUrl = blueBaseUrl;
         this.greenBaseUrl = greenBaseUrl;
+        this.indexName = indexName;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
@@ -84,7 +88,7 @@ public class MatchQueryComparisonService {
     }
 
     private JsonNode runSearch(String baseUrl, String query, int size) throws SearchComparisonException {
-        String url = baseUrl + "/alpha_search/_search?pretty";
+        String url = baseUrl + "/" + indexName + "/_search?pretty";
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("size", size);
@@ -108,7 +112,7 @@ public class MatchQueryComparisonService {
 
             return responseBody;
 
-        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             LOGGER.error(String.format("Error serializing request body for %s: %s", baseUrl, e.getMessage()), e);
             throw new SearchComparisonException("Failed to serialize search request for " + baseUrl, e);
         } catch (RestClientException e) {
