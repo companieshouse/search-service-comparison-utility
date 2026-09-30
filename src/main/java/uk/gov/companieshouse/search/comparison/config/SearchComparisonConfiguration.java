@@ -23,6 +23,10 @@ public class SearchComparisonConfiguration {
     @Value("${search.index-name}")
     private String indexName;
 
+    // Environment variable used to switch between a local unsigned OpenSearch client and an
+    // AWS SigV4-signed client.
+    private static final String USE_AWS_SIGV4 = "USE_AWS_SIGV4";
+
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
@@ -31,9 +35,15 @@ public class SearchComparisonConfiguration {
     @Bean
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getInterceptors()
-            .add(new AwsSigningInterceptor(DefaultCredentialsProvider.builder().build()));
+        if (useAwsSigV4()) {
+            restTemplate.getInterceptors()
+                    .add(new AwsSigningInterceptor(DefaultCredentialsProvider.builder().build()));
+        }
         return restTemplate;
+    }
+
+    private static boolean useAwsSigV4() {
+        return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
     }
 
     @Bean
