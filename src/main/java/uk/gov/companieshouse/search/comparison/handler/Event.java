@@ -26,6 +26,9 @@ public class Event {
 
     public static class Detail {
         private String action;
+        private String operation;
+        private String query;
+        private int size;
 
         public String getAction() {
             return action;
@@ -35,10 +38,38 @@ public class Event {
             this.action = action;
         }
 
+        public String getOperation() {
+            return operation;
+        }
+
+        public void setOperation(String operation) {
+            this.operation = operation;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
+
         @Override
         public String toString() {
             return "Detail{" +
                     "action='" + action + '\'' +
+                    ", operation='" + operation + '\'' +
+                    ", query='" + query + '\'' +
+                    ", size=" + size +
                     '}';
         }
     }

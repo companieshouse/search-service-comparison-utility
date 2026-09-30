@@ -11,17 +11,23 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonConfiguration;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
+import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
 public class SearchComparisonHandler implements RequestHandler<Event, Map<String, Object>> {
 
     private static final Logger LOG = LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final String STATUS_CODE = "statusCode";
+    private static final String ERROR = "error";
+    private static final String BODY = "body";
 
     private static final DocumentCountService documentCountService;
     private static final ObjectMapper objectMapper;
+    private static final MatchQueryComparisonService matchQueryComparisonService;
 
     static {
         try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
             documentCountService = context.getBean(DocumentCountService.class);
+            matchQueryComparisonService = context.getBean(MatchQueryComparisonService.class);
             objectMapper = new ObjectMapper();
         }
     }
@@ -32,19 +38,47 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
         LOG.info("Event received: " + event);
 
         try {
-            DocumentCountResponse response = documentCountService.getDocumentCounts();
-            LOG.info("Successfully retrieved document counts");
 
-            Map<String, Object> responseMap = objectMapper.convertValue(response, Map.class);
+            if (event.getDetail() == null) {
+                LOG.error("Event detail is missing");
+                return Map.of(STATUS_CODE, 400, ERROR, "Event detail is required");
+            }
+
+            Map<String, Object> responseMap;
+            String operation = event.getDetail().getOperation();
+
+            // Route to appropriate service based on event type
+            if ("match-query".equals(operation)) {
+                String query = event.getDetail().getQuery();
+                int size = event.getDetail().getSize();
+
+                if (query == null || query.isEmpty() || size <= 0) {
+                    LOG.error("Query and size are required for match-query operation");
+                    return Map.of(STATUS_CODE, 400, ERROR, "Query and size are required");
+                }
+
+                LOG.info(String.format("Operation: %s, Query: %s, Size: %d", operation, query, size));
+                LOG.info("Executing match-query comparison");
+                var result = matchQueryComparisonService.compare(query, size);
+                LOG.info("Successfully compared match query");
+                responseMap = objectMapper.convertValue(result, Map.class);
+            } else {
+                // Default: document counts
+                LOG.info("Executing document count retrieval");
+                DocumentCountResponse response = documentCountService.getDocumentCounts();
+                LOG.info("Successfully retrieved document counts");
+                responseMap = objectMapper.convertValue(response, Map.class);
+            }
+            LOG.info("Returning successful response with status 200");
             return Map.of(
-                    "statusCode", 200,
-                    "body", responseMap
+                    STATUS_CODE, 200,
+                    BODY, responseMap
             );
         } catch (Exception e) {
             LOG.error("Error retrieving document counts: " + e.getMessage(), e);
             return Map.of(
-                    "statusCode", 500,
-                    "error", e.getMessage()
+                    STATUS_CODE, 500,
+                    ERROR, e.getMessage()
             );
         }
     }

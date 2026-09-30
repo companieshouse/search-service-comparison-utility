@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 
+
 @Configuration
 @PropertySource("classpath:application.properties")
 public class SearchComparisonConfiguration {
@@ -39,6 +40,5 @@ public class SearchComparisonConfiguration {
     public DocumentCountService documentCount(RestTemplate restTemplate) {
         return new DocumentCountService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate);
     }
+
 }
-
-
