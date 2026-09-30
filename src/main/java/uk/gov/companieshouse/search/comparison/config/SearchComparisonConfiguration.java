@@ -1,6 +1,3 @@
-
-
-
 package uk.gov.companieshouse.search.comparison.config;
 
 import org.springframework.beans.factory.annotation.Value;
