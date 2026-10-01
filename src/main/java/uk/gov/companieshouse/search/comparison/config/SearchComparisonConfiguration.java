@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.search.comparison.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +9,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
-
+import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -42,6 +43,11 @@ public class SearchComparisonConfiguration {
         return restTemplate;
     }
 
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
     private static boolean useAwsSigV4() {
         return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
     }
@@ -49,6 +55,11 @@ public class SearchComparisonConfiguration {
     @Bean
     public DocumentCountService documentCount(RestTemplate restTemplate) {
         return new DocumentCountService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate);
+    }
+
+    @Bean
+    public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        return new MatchQueryComparisonService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate, objectMapper);
     }
 
 }

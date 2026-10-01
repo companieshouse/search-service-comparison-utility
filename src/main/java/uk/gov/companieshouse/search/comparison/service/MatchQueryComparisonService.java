@@ -7,7 +7,6 @@ import java.util.*;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.logging.Logger;
@@ -19,7 +18,6 @@ import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-@Service
 public class MatchQueryComparisonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
