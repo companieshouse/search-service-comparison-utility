@@ -28,7 +28,7 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
         try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
             documentCountService = context.getBean(DocumentCountService.class);
             matchQueryComparisonService = context.getBean(MatchQueryComparisonService.class);
-            objectMapper = new ObjectMapper();
+            objectMapper = context.getBean(ObjectMapper.class);
         }
     }
 
