@@ -8,6 +8,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.services.s3.S3Client;
+import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
@@ -23,6 +25,9 @@ public class SearchComparisonConfiguration {
 
     @Value("${search.index-name}")
     private String indexName;
+
+    @Value("${s3.bucket.name}")
+    private String s3BucketName;
 
     // Environment variable used to switch between a local unsigned OpenSearch client and an
     // AWS SigV4-signed client.
@@ -53,8 +58,20 @@ public class SearchComparisonConfiguration {
     }
 
     @Bean
-    public DocumentCountService documentCount(RestTemplate restTemplate) {
-        return new DocumentCountService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate);
+    public S3Client s3Client() {
+        return S3Client.create();
+    }
+
+    @Bean
+    public S3UploadClient s3UploadClient(S3Client s3Client) {
+        return new S3UploadClient(s3Client, s3BucketName);
+    }
+
+    @Bean
+    public DocumentCountService documentCount(RestTemplate restTemplate, S3UploadClient s3UploadClient,
+                                               ObjectMapper objectMapper) {
+        return new DocumentCountService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate,
+                s3UploadClient, objectMapper);
     }
 
     @Bean
