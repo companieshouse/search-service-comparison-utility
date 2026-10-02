@@ -64,3 +64,23 @@ data "aws_iam_policy_document" "opensearch_access_policy" {
     resources = [for domain in data.aws_opensearch_domain.opensearch : "${domain.arn}/*"]
   }
 }
+
+data "aws_s3_bucket" "search_comparison_reports_bucket" {
+  bucket = local.s3_bucket_name
+}
+
+data "aws_iam_policy_document" "s3_access_policy" {
+  statement {
+    sid       = "AllowSearchComparisonBucketListAccess"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
+    resources = [data.aws_s3_bucket.search_comparison_reports_bucket.arn]
+  }
+
+  statement {
+    sid       = "AllowSearchComparisonObjectAccess"
+    effect    = "Allow"
+    actions   = ["s3:GetObject", "s3:PutObject"]
+    resources = ["${data.aws_s3_bucket.search_comparison_reports_bucket.arn}/*"]
+  }
+}

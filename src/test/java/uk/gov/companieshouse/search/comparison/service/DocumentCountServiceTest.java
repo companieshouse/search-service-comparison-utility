@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
@@ -29,6 +34,9 @@ class DocumentCountServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private S3UploadClient s3UploadClient;
+
     private DocumentCountService client;
 
     @BeforeEach
@@ -37,7 +45,9 @@ class DocumentCountServiceTest {
             "http://localhost:9200",
             "http://localhost:9201",
             "alpha_search",
-            restTemplate
+            restTemplate,
+            s3UploadClient,
+            new ObjectMapper()
         );
     }
 
@@ -63,6 +73,8 @@ class DocumentCountServiceTest {
         assertNotNull(response);
         assertEquals(1234, response.totalDocuments().blue());
         assertEquals(5678, response.totalDocuments().green());
+
+        verify(s3UploadClient).uploadFile(anyString(), anyString());
     }
 
     @Test
@@ -107,5 +119,32 @@ class DocumentCountServiceTest {
         assertNotNull(exception.getCause());
     }
 
+    @Test
+    void testGetDocumentCountsThrowsWhenS3UploadFails() {
+        var blueCountResponse = new CountResponse(1234);
+        var greenCountResponse = new CountResponse(5678);
+
+        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
+            eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(CountResponse.class)))
+            .thenReturn(ResponseEntity.ok(blueCountResponse));
+
+        when(restTemplate.exchange(eq("http://localhost:9201/alpha_search/_count"),
+            eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(CountResponse.class)))
+            .thenReturn(ResponseEntity.ok(greenCountResponse));
+
+        org.mockito.Mockito.doThrow(S3Exception.builder().message("Upload failed").build())
+            .when(s3UploadClient).uploadFile(anyString(), anyString());
+
+        SearchComparisonException exception = assertThrows(
+            SearchComparisonException.class, () -> client.getDocumentCounts());
+
+        assertTrue(exception.getMessage().contains("S3"));
+    }
+
 }
+
 
