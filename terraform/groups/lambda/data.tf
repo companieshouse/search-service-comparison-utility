@@ -65,10 +65,6 @@ data "aws_iam_policy_document" "opensearch_access_policy" {
   }
 }
 
-resource "aws_s3_bucket" "search_comparison_reports" {
-  bucket = local.s3_bucket_name
-}
-
 data "aws_iam_policy_document" "s3_access_policy" {
   statement {
     sid       = "AllowSearchComparisonBucketListAccess"
