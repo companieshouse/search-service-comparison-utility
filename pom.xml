@@ -19,7 +19,7 @@
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <spring-boot.version>3.5.14</spring-boot.version>
-        <aws-sdk-v2.version>2.47.6</aws-sdk-v2.version>
+        <aws-sdk.version>2.47.6</aws-sdk.version>
         <aws-serverless-java-container-springboot3.version>2.1.5</aws-serverless-java-container-springboot3.version>
         <structured-logging.version>3.0.57</structured-logging.version>
 
@@ -46,13 +46,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${aws-sdk-v2.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -66,10 +59,23 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>auth</artifactId>
+            <version>${aws-sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>http-auth-aws</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws-sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
