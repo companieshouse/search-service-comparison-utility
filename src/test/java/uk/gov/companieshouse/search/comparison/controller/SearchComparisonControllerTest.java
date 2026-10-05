@@ -16,6 +16,7 @@ import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
+import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,8 @@ class SearchComparisonControllerTest {
     private DocumentCountService documentCountService;
     @MockitoBean
     private MatchQueryComparisonService matchQueryComparisonService;
+    @MockitoBean
+    private ComparisonOrchestratorService comparisonOrchestratorService;
 
     @Test
     void testGetDocumentCount() throws Exception {

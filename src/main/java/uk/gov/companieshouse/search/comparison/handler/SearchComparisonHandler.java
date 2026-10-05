@@ -39,18 +39,19 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
 
         try {
 
-            if (event.getDetail() == null) {
+            if (event.getDetails() == null) {
                 LOG.error("Event detail is missing");
                 return Map.of(STATUS_CODE, 400, ERROR, "Event detail is required");
             }
 
             Map<String, Object> responseMap;
-            String operation = event.getDetail().getOperation();
+            var detail = event.getDetails().get(0);
+            String operation = detail.getOperation();
 
             // Route to appropriate service based on event type
             if ("match-query".equals(operation)) {
-                String query = event.getDetail().getQuery();
-                int size = event.getDetail().getSize();
+                String query = detail.getQuery();
+                int size = detail.getSize();
 
                 if (query == null || query.isEmpty() || size <= 0) {
                     LOG.error("Query and size are required for match-query operation");

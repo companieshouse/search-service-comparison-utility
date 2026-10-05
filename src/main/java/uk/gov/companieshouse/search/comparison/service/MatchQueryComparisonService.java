@@ -29,9 +29,9 @@ public class MatchQueryComparisonService {
     private final String greenBaseUrl;
     private final String indexName;
 
-    public MatchQueryComparisonService(@Value("${BLUE_SEARCH_CLUSTER_URL}") String blueBaseUrl,
-                                       @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenBaseUrl,
-                                       @Value("${search.index-name}") String indexName,
+    public MatchQueryComparisonService(String blueBaseUrl,
+                                       String greenBaseUrl,
+                                       String indexName,
                                        RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.blueBaseUrl = blueBaseUrl;
         this.greenBaseUrl = greenBaseUrl;

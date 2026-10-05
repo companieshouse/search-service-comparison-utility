@@ -8,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 
@@ -23,6 +24,13 @@ public class SearchComparisonConfiguration {
 
     @Value("${search.index-name}")
     private String indexName;
+
+    @Value("${search.default-query}")
+    private String defaultQuery;
+
+    @Value("${search.default-size}")
+    private int defaultSize;
+
 
     // Environment variable used to switch between a local unsigned OpenSearch client and an
     // AWS SigV4-signed client.
@@ -49,7 +57,8 @@ public class SearchComparisonConfiguration {
     }
 
     private static boolean useAwsSigV4() {
-        return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
+        //return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
+        return false; // For local testing, set to false. In production, set to true.
     }
 
     @Bean
@@ -61,5 +70,31 @@ public class SearchComparisonConfiguration {
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
         return new MatchQueryComparisonService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate, objectMapper);
     }
+
+    //    @Bean
+//    public ComparisonOrchestratorService comparisonOrchestratorService(
+//            DocumentCountService documentCountService,
+//            MatchQueryComparisonService matchQueryComparisonService,
+//            MatchPrefixComparisonService matchPrefixComparisonService,
+//            S3StorageService s3StorageService) {
+//        return new ComparisonOrchestratorService(
+//                documentCountService,
+//                matchQueryComparisonService,
+//                matchPrefixComparisonService,
+//                s3StorageService);
+//    }
+
+    @Bean
+    public ComparisonOrchestratorService comparisonOrchestratorService(
+            DocumentCountService documentCountService,
+            MatchQueryComparisonService matchQueryComparisonService) {
+        return new ComparisonOrchestratorService(
+                documentCountService,
+                matchQueryComparisonService,
+                defaultQuery,
+                defaultSize
+        );
+    }
+
 
 }
