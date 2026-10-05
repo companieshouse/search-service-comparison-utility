@@ -71,19 +71,6 @@ public class SearchComparisonConfiguration {
         return new MatchQueryComparisonService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate, objectMapper);
     }
 
-    //    @Bean
-//    public ComparisonOrchestratorService comparisonOrchestratorService(
-//            DocumentCountService documentCountService,
-//            MatchQueryComparisonService matchQueryComparisonService,
-//            MatchPrefixComparisonService matchPrefixComparisonService,
-//            S3StorageService s3StorageService) {
-//        return new ComparisonOrchestratorService(
-//                documentCountService,
-//                matchQueryComparisonService,
-//                matchPrefixComparisonService,
-//                s3StorageService);
-//    }
-
     @Bean
     public ComparisonOrchestratorService comparisonOrchestratorService(
             DocumentCountService documentCountService,
