@@ -20,17 +20,13 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
     private static final String ERROR = "error";
     private static final String BODY = "body";
 
-    private static final DocumentCountService documentCountService;
-    private static final ObjectMapper objectMapper;
-    private static final MatchQueryComparisonService matchQueryComparisonService;
+    private static final AnnotationConfigApplicationContext context =
+            new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class);
 
-    static {
-        try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
-            documentCountService = context.getBean(DocumentCountService.class);
-            matchQueryComparisonService = context.getBean(MatchQueryComparisonService.class);
-            objectMapper = context.getBean(ObjectMapper.class);
-        }
-    }
+    private static final DocumentCountService documentCountService = context.getBean(DocumentCountService.class);
+    private static final ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
+    private static final MatchQueryComparisonService matchQueryComparisonService =
+            context.getBean(MatchQueryComparisonService.class);
 
     @Override
     public Map<String, Object> handleRequest(Event event, Context context) {
