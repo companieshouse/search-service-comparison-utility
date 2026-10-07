@@ -9,9 +9,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonConfiguration;
-import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
-import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
-import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
+import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 
 public class SearchComparisonHandler implements RequestHandler<Event, Map<String, Object>> {
 
@@ -20,14 +18,12 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
     private static final String ERROR = "error";
     private static final String BODY = "body";
 
-    private static final DocumentCountService documentCountService;
     private static final ObjectMapper objectMapper;
-    private static final MatchQueryComparisonService matchQueryComparisonService;
+    private static final ComparisonOrchestratorService orchestratorService;
 
     static {
         try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
-            documentCountService = context.getBean(DocumentCountService.class);
-            matchQueryComparisonService = context.getBean(MatchQueryComparisonService.class);
+            orchestratorService = context.getBean(ComparisonOrchestratorService.class);
             objectMapper = context.getBean(ObjectMapper.class);
         }
     }
@@ -45,38 +41,17 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
             }
 
             Map<String, Object> responseMap;
-            var detail = event.getDetails().get(0);
-            String operation = detail.getOperation();
-
-            // Route to appropriate service based on event type
-            if ("match-query".equals(operation)) {
-                String query = detail.getQuery();
-                int size = detail.getSize();
-
-                if (query == null || query.isEmpty() || size <= 0) {
-                    LOG.error("Query and size are required for match-query operation");
-                    return Map.of(STATUS_CODE, 400, ERROR, "Query and size are required");
-                }
-
-                LOG.info(String.format("Operation: %s, Query: %s, Size: %d", operation, query, size));
-                LOG.info("Executing match-query comparison");
-                var result = matchQueryComparisonService.compare(query, size);
-                LOG.info("Successfully compared match query");
-                responseMap = objectMapper.convertValue(result, Map.class);
-            } else {
-                // Default: document counts
-                LOG.info("Executing document count retrieval");
-                DocumentCountResponse response = documentCountService.getDocumentCounts();
-                LOG.info("Successfully retrieved document counts");
-                responseMap = objectMapper.convertValue(response, Map.class);
-            }
+            LOG.info("Executing orchestration service for event");
+            var result = orchestratorService.orchestrate(event);
+            LOG.info("Successfully executed orchestration service");
+            responseMap = objectMapper.convertValue(result, Map.class);
             LOG.info("Returning successful response with status 200");
             return Map.of(
                     STATUS_CODE, 200,
                     BODY, responseMap
             );
         } catch (Exception e) {
-            LOG.error("Error retrieving document counts: " + e.getMessage(), e);
+            LOG.error("Failed to execute orchestration service: " + e.getMessage(), e);
             return Map.of(
                     STATUS_CODE, 500,
                     ERROR, e.getMessage()
