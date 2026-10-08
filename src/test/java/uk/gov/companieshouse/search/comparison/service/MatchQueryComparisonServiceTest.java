@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 
@@ -39,9 +40,11 @@ class MatchQueryComparisonServiceTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         service = new MatchQueryComparisonService(
-                "http://localhost:9200",
-                "http://localhost:9201",
-                "alpha_search",
+                new SearchComparisonProperties(
+                        "http://localhost:9200",
+                        "http://localhost:9201",
+                        "alpha_search"
+                ),
                 restTemplate,
                 objectMapper
         );
@@ -118,9 +121,9 @@ class MatchQueryComparisonServiceTest {
         assertEquals(1, matchResult.getGreenTotal());
         assertEquals(1, matchResult.getTotalDiscrepancies());
         assertEquals(1, matchResult.getDiscrepancies().size());
-        assertEquals(0, matchResult.getDiscrepancies().get(0).getPosition());
-        assertEquals("123", matchResult.getDiscrepancies().get(0).getBlue().getDocId());
-        assertEquals("999", matchResult.getDiscrepancies().get(0).getGreen().getDocId());
+        assertEquals(0, matchResult.getDiscrepancies().getFirst().getPosition());
+        assertEquals("123", matchResult.getDiscrepancies().getFirst().getBlue().getDocId());
+        assertEquals("999", matchResult.getDiscrepancies().getFirst().getGreen().getDocId());
     }
 
     @Test
@@ -190,10 +193,10 @@ class MatchQueryComparisonServiceTest {
         assertEquals(0, matchResult.getGreenTotal());
         assertEquals(1, matchResult.getTotalDiscrepancies());
         assertEquals(1, matchResult.getDiscrepancies().size());
-        assertEquals(0, matchResult.getDiscrepancies().get(0).getPosition());
-        assertNotNull(matchResult.getDiscrepancies().get(0).getBlue());
-        assertEquals("123", matchResult.getDiscrepancies().get(0).getBlue().getDocId());
-        assertNull(matchResult.getDiscrepancies().get(0).getGreen());
+        assertEquals(0, matchResult.getDiscrepancies().getFirst().getPosition());
+        assertNotNull(matchResult.getDiscrepancies().getFirst().getBlue());
+        assertEquals("123", matchResult.getDiscrepancies().getFirst().getBlue().getDocId());
+        assertNull(matchResult.getDiscrepancies().getFirst().getGreen());
     }
 
     @Test

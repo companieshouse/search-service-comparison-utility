@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
@@ -25,27 +25,21 @@ public class MatchQueryComparisonService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final String blueBaseUrl;
-    private final String greenBaseUrl;
-    private final String indexName;
+    private final SearchComparisonProperties searchComparisonProperties;
 
-    public MatchQueryComparisonService(@Value("${BLUE_SEARCH_CLUSTER_URL}") String blueBaseUrl,
-                                       @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenBaseUrl,
-                                       @Value("${search.index-name}") String indexName,
+    public MatchQueryComparisonService(SearchComparisonProperties searchComparisonProperties,
                                        RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.blueBaseUrl = blueBaseUrl;
-        this.greenBaseUrl = greenBaseUrl;
-        this.indexName = indexName;
+        this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
 
     public Map<String, MatchQueryResult> compare(String query, int size) throws SearchComparisonException {
         JsonNode blue = Objects.requireNonNull(
-                runSearch(blueBaseUrl, query, size),
+                runSearch(searchComparisonProperties.blueSearchClusterUrl(), query, size),
                 "Blue search result cannot be null");
         JsonNode green = Objects.requireNonNull(
-                runSearch(greenBaseUrl, query, size),
+                runSearch(searchComparisonProperties.greenSearchClusterUrl(), query, size),
                 "Green search result cannot be null");
 
         List<HitDoc> blueHits = extractHits(blue);
@@ -86,7 +80,7 @@ public class MatchQueryComparisonService {
     }
 
     private JsonNode runSearch(String baseUrl, String query, int size) throws SearchComparisonException {
-        String url = baseUrl + "/" + indexName + "/_search?pretty";
+        String url = baseUrl + "/" + searchComparisonProperties.indexName() + "/_search?pretty";
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("size", size);
@@ -134,7 +128,7 @@ public class MatchQueryComparisonService {
         for (JsonNode hit : hitsArray) {
             String id = hit.path("_id").asText(null);
             JsonNode sourceNode = hit.path("_source");
-            Map<String, Object> source = objectMapper.convertValue(sourceNode, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> source = objectMapper.convertValue(sourceNode, new TypeReference<>() {});
             result.add(new HitDoc(id, source));
         }
         return result;
