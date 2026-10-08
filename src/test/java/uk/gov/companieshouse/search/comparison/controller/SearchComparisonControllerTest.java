@@ -114,5 +114,29 @@ class SearchComparisonControllerTest {
                 .andExpect(jsonPath("$.match_query_" + query + ".total_discrepancies", is(0)));
     }
 
+    @Test
+    void testCompareMatchQueryWithDetail() throws Exception {
+        String query = "TESTCOMPANY";
+
+        var matchResult = new MatchQueryResult();
+        matchResult.setBlueTotal(5);
+        matchResult.setGreenTotal(3);
+        matchResult.setTotalDiscrepancies(2);
+        matchResult.setDiscrepancies(new ArrayList<>());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("match_query_" + query, matchResult);
+
+        when(matchQueryComparisonService.compare(any(Event.Detail.class))).thenReturn(response);
+
+        mockMvc.perform(post("/documents/match-query")
+                        .contentType("application/json")
+                        .content("{\"query\":\"TESTCOMPANY\",\"operation\":\"match_query\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(5)))
+                .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(3)))
+                .andExpect(jsonPath("$.match_query_" + query + ".total_discrepancies", is(2)));
+    }
+
 }
 
