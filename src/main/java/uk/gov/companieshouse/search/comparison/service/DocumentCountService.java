@@ -1,8 +1,5 @@
 package uk.gov.companieshouse.search.comparison.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -12,10 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
@@ -28,15 +23,13 @@ public class DocumentCountService {
 
     private final SearchComparisonProperties searchComparisonProperties;
     private final RestTemplate restTemplate;
-    private final S3UploadClient s3UploadClient;
-    private final ObjectMapper objectMapper;
+    private final ReportUploadService reportUploadService;
 
     public DocumentCountService(SearchComparisonProperties searchComparisonProperties, RestTemplate restTemplate,
-                                 S3UploadClient s3UploadClient, ObjectMapper objectMapper) {
+                                 ReportUploadService reportUploadService) {
         this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
-        this.s3UploadClient = s3UploadClient;
-        this.objectMapper = objectMapper;
+        this.reportUploadService = reportUploadService;
     }
 
     public DocumentCountResponse getDocumentCounts() {
@@ -50,27 +43,9 @@ public class DocumentCountService {
         var counts = new DocumentCountResponse.DocumentCounts(blueCount, greenCount);
         var response = new DocumentCountResponse(counts);
 
-        uploadDocumentCounts(response);
+        reportUploadService.upload(S3_KEY_PREFIX, response);
 
         return response;
-    }
-
-    private void uploadDocumentCounts(DocumentCountResponse response) {
-        String key = String.format("%s/%s.json", S3_KEY_PREFIX, Instant.now());
-
-        LOGGER.info(String.format("Uploading document counts to S3 with key: %s", key));
-
-        try {
-            String content = objectMapper.writeValueAsString(response);
-            s3UploadClient.uploadFile(key, content);
-            LOGGER.info(String.format("Successfully uploaded document counts to S3 with key: %s", key));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to serialise document counts for S3 upload: " + e.getMessage(), e);
-            throw new SearchComparisonException("Failed to serialise document counts for S3 upload", e);
-        } catch (S3Exception e) {
-            LOGGER.error("Failed to upload document counts to S3: " + e.getMessage(), e);
-            throw new SearchComparisonException("Failed to upload document counts to S3", e);
-        }
     }
 
     private long getDocumentCount(String baseUrl, String clusterName) {
