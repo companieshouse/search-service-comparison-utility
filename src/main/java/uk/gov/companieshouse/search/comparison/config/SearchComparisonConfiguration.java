@@ -17,21 +17,18 @@ import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonServi
 @PropertySource("classpath:application.properties")
 public class SearchComparisonConfiguration {
 
-    @Value("${BLUE_SEARCH_CLUSTER_URL}")
-    private String blueSearchClusterUrl;
+    // Environment variable used to switch between a local unsigned OpenSearch client and an
+    // AWS SigV4-signed client.
+    private static final String USE_AWS_SIGV4 = "USE_AWS_SIGV4";
 
-    @Value("${GREEN_SEARCH_CLUSTER_URL}")
-    private String greenSearchClusterUrl;
-
-    @Value("${search.index-name}")
-    private String indexName;
+    private final SearchComparisonProperties searchComparisonProperties;
 
     @Value("${s3.bucket.name}")
     private String s3BucketName;
 
-    // Environment variable used to switch between a local unsigned OpenSearch client and an
-    // AWS SigV4-signed client.
-    private static final String USE_AWS_SIGV4 = "USE_AWS_SIGV4";
+    public SearchComparisonConfiguration(SearchComparisonProperties searchComparisonProperties) {
+        this.searchComparisonProperties = searchComparisonProperties;
+    }
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -70,13 +67,12 @@ public class SearchComparisonConfiguration {
     @Bean
     public DocumentCountService documentCount(RestTemplate restTemplate, S3UploadClient s3UploadClient,
                                                ObjectMapper objectMapper) {
-        return new DocumentCountService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate,
-                s3UploadClient, objectMapper);
+        return new DocumentCountService(searchComparisonProperties, restTemplate, s3UploadClient, objectMapper);
     }
 
     @Bean
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        return new MatchQueryComparisonService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate, objectMapper);
+        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper);
     }
 
 }

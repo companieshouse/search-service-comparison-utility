@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
@@ -25,19 +26,14 @@ public class DocumentCountService {
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
     private static final String S3_KEY_PREFIX = "document-counts";
 
-    private final String blueSearchClusterUrl;
-    private final String greenSearchClusterUrl;
-    private final String indexName;
+    private final SearchComparisonProperties searchComparisonProperties;
     private final RestTemplate restTemplate;
     private final S3UploadClient s3UploadClient;
     private final ObjectMapper objectMapper;
 
-    public DocumentCountService(String blueSearchClusterUrl, String greenSearchClusterUrl,
-                                 String indexName, RestTemplate restTemplate,
+    public DocumentCountService(SearchComparisonProperties searchComparisonProperties, RestTemplate restTemplate,
                                  S3UploadClient s3UploadClient, ObjectMapper objectMapper) {
-        this.blueSearchClusterUrl = blueSearchClusterUrl;
-        this.greenSearchClusterUrl = greenSearchClusterUrl;
-        this.indexName = indexName;
+        this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
         this.s3UploadClient = s3UploadClient;
         this.objectMapper = objectMapper;
@@ -46,8 +42,8 @@ public class DocumentCountService {
     public DocumentCountResponse getDocumentCounts() {
         LOGGER.info("Fetching document counts from blue and green clusters");
 
-        long blueCount = getDocumentCount(blueSearchClusterUrl, "blue");
-        long greenCount = getDocumentCount(greenSearchClusterUrl, "green");
+        long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), "blue");
+        long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), "green");
 
         LOGGER.info(String.format("Blue cluster count: %d, Green cluster count: %d", blueCount, greenCount));
 
@@ -79,7 +75,7 @@ public class DocumentCountService {
 
     private long getDocumentCount(String baseUrl, String clusterName) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
-            .pathSegment(indexName, "_count")
+            .pathSegment(searchComparisonProperties.indexName(), "_count")
             .toUriString();
 
         LOGGER.info(String.format("Querying document count for %s cluster using URL: %s", clusterName, url));

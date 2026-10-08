@@ -9,6 +9,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonConfiguration;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
@@ -21,7 +22,7 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
     private static final String BODY = "body";
 
     private static final AnnotationConfigApplicationContext context =
-            new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class);
+            new AnnotationConfigApplicationContext(SearchComparisonProperties.class, SearchComparisonConfiguration.class);
 
     private static final DocumentCountService documentCountService = context.getBean(DocumentCountService.class);
     private static final ObjectMapper objectMapper = context.getBean(ObjectMapper.class);

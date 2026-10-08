@@ -24,6 +24,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
@@ -42,9 +43,11 @@ class DocumentCountServiceTest {
     @BeforeEach
     void setUp() {
         client = new DocumentCountService(
-            "http://localhost:9200",
-            "http://localhost:9201",
-            "alpha_search",
+            new SearchComparisonProperties(
+                "http://localhost:9200",
+                "http://localhost:9201",
+                "alpha_search"
+            ),
             restTemplate,
             s3UploadClient,
             new ObjectMapper()
