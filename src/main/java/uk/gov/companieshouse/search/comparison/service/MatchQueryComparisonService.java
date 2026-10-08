@@ -12,13 +12,14 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class MatchQueryComparisonService {
+public class MatchQueryComparisonService implements ComparisonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
     private static final int MAX_DISCREPANCIES = 10;
@@ -40,7 +41,19 @@ public class MatchQueryComparisonService {
         this.objectMapper = objectMapper;
     }
 
-    public Map<String, MatchQueryResult> compare(String query, int size) throws SearchComparisonException {
+    @Override
+    public String getOperation() {
+        return "MATCH_QUERY";
+    }
+
+    @Override
+    public Map<String, Object> compare(Event.Detail detail) throws SearchComparisonException {
+
+        // Use default values if not provided in event
+       // String query = detail.getQuery() != null ? detail.getQuery() : defaultQuery;
+        //int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
+        String query = detail.getQuery();
+        int size = detail.getSize();
         JsonNode blue = Objects.requireNonNull(
                 runSearch(blueBaseUrl, query, size),
                 "Blue search result cannot be null");

@@ -3,14 +3,17 @@ package uk.gov.companieshouse.search.comparison.controller;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.any;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
@@ -19,7 +22,9 @@ import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonServi
 import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebMvcTest(SearchComparisonController.class)
 class SearchComparisonControllerTest {
@@ -60,13 +65,24 @@ class SearchComparisonControllerTest {
         matchResult.setTotalDiscrepancies(0);
         matchResult.setDiscrepancies(discrepancies);
 
-        var response = java.util.Collections.singletonMap("match_query_" + query, matchResult);
+        Map<String, Object> response = new HashMap<>();
+        response.put("match_query_" + query, matchResult);
 
-        when(matchQueryComparisonService.compare(query, size)).thenReturn(response);
+        var detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setOperation("match_query");
 
-        mockMvc.perform(get("/documents/match-query")
-                        .param("query", query)
-                        .param("size", String.valueOf(size)))
+        var event = new Event();
+        event.setDetails(List.of(detail));
+
+        when(comparisonOrchestratorService.orchestrate(any(Event.class))).thenReturn(response);
+
+//        mockMvc.perform(post("/documents/compare")
+//                        .param("query", query)
+//                        .param("size", String.valueOf(size)))
+        mockMvc.perform(post("/documents/compare")
+                        .contentType("application/json")
+                        .content("{\"details\":[{\"query\":\"TESTCOMPANY\",\"operation\":\"match_query\"}]}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(1)))
                 .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)))
@@ -84,11 +100,14 @@ class SearchComparisonControllerTest {
         matchResult.setTotalDiscrepancies(0);
         matchResult.setDiscrepancies(new java.util.ArrayList<>());
 
-        var response = java.util.Collections.singletonMap("match_query_" + query, matchResult);
+        Map<String, Object> response = new HashMap<>();
+        response.put("match_query_" + query, matchResult);
 
-        when(matchQueryComparisonService.compare(query, size)).thenReturn(response);
+        when(comparisonOrchestratorService.orchestrate(any(Event.class))).thenReturn(response);
 
-        mockMvc.perform(get("/documents/match-query"))
+        mockMvc.perform(post("/documents/compare")
+                        .contentType("application/json")
+                        .content("{\"details\":[{\"query\":\"GIRLONTHEGROUND\",\"operation\":\"match_query\"}]}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(1)))
                 .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)))

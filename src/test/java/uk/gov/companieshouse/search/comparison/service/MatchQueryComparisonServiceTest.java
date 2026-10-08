@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 
 import java.util.Map;
@@ -73,11 +74,15 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Map<String, MatchQueryResult> result = service.compare(query, size);
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setSize(size);
+
+        Map<String, Object> result = service.compare(detail);
 
         assertNotNull(result);
         assertTrue(result.containsKey("match_query_" + query));
-        MatchQueryResult matchResult = result.get("match_query_" + query);
+        MatchQueryResult matchResult = (MatchQueryResult) result.get("match_query_" + query);
         assertEquals(1, matchResult.getBlueTotal());
         assertEquals(1, matchResult.getGreenTotal());
         assertEquals(0, matchResult.getTotalDiscrepancies());
@@ -110,10 +115,14 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Map<String, MatchQueryResult> result = service.compare(query, size);
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setSize(size);
+
+        Map<String, Object> result = service.compare(detail);
 
         assertNotNull(result);
-        MatchQueryResult matchResult = result.get("match_query_" + query);
+        MatchQueryResult matchResult = (MatchQueryResult) result.get("match_query_" + query);
         assertEquals(1, matchResult.getBlueTotal());
         assertEquals(1, matchResult.getGreenTotal());
         assertEquals(1, matchResult.getTotalDiscrepancies());
@@ -147,10 +156,14 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Map<String, MatchQueryResult> result = service.compare(query, size);
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setSize(size);
+
+        Map<String, Object> result = service.compare(detail);
 
         assertNotNull(result);
-        MatchQueryResult matchResult = result.get("match_query_" + query);
+        MatchQueryResult matchResult = (MatchQueryResult) result.get("match_query_" + query);
         assertEquals(0, matchResult.getBlueTotal());
         assertEquals(0, matchResult.getGreenTotal());
         assertEquals(0, matchResult.getTotalDiscrepancies());
@@ -182,10 +195,14 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Map<String, MatchQueryResult> result = service.compare(query, size);
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setSize(size);
+
+        Map<String, Object> result = service.compare(detail);
 
         assertNotNull(result);
-        MatchQueryResult matchResult = result.get("match_query_" + query);
+        MatchQueryResult matchResult = (MatchQueryResult) result.get("match_query_" + query);
         assertEquals(1, matchResult.getBlueTotal());
         assertEquals(0, matchResult.getGreenTotal());
         assertEquals(1, matchResult.getTotalDiscrepancies());
@@ -207,8 +224,12 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
 
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setSize(size);
+
         SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class, () -> service.compare(query, size));
+                SearchComparisonException.class, () -> service.compare(detail));
 
         assertNotNull(exception);
         assertTrue(exception.getMessage().contains("Failed to retrieve search results"));
@@ -225,12 +246,15 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery(query);
+        detail.setSize(size);
+
         SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class, () -> service.compare(query, size));
+                SearchComparisonException.class, () -> service.compare(detail));
 
         assertNotNull(exception);
         assertTrue(exception.getMessage().contains("Failed to retrieve search results"));
     }
-
 
 }
