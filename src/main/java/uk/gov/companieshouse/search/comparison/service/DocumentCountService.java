@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
@@ -18,35 +19,38 @@ import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 public class DocumentCountService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final String S3_KEY_PREFIX = "document-counts";
 
-    private final String blueSearchClusterUrl;
-    private final String greenSearchClusterUrl;
-    private final String indexName;
+    private final SearchComparisonProperties searchComparisonProperties;
     private final RestTemplate restTemplate;
+    private final ReportUploadService reportUploadService;
 
-    public DocumentCountService(String blueSearchClusterUrl, String greenSearchClusterUrl,
-                                 String indexName, RestTemplate restTemplate) {
-        this.blueSearchClusterUrl = blueSearchClusterUrl;
-        this.greenSearchClusterUrl = greenSearchClusterUrl;
-        this.indexName = indexName;
+    public DocumentCountService(SearchComparisonProperties searchComparisonProperties, RestTemplate restTemplate,
+                                 ReportUploadService reportUploadService) {
+        this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
+        this.reportUploadService = reportUploadService;
     }
 
     public DocumentCountResponse getDocumentCounts() {
         LOGGER.info("Fetching document counts from blue and green clusters");
 
-        long blueCount = getDocumentCount(blueSearchClusterUrl, "blue");
-        long greenCount = getDocumentCount(greenSearchClusterUrl, "green");
+        long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), "blue");
+        long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), "green");
 
         LOGGER.info(String.format("Blue cluster count: %d, Green cluster count: %d", blueCount, greenCount));
 
         var counts = new DocumentCountResponse.DocumentCounts(blueCount, greenCount);
-        return new DocumentCountResponse(counts);
+        var response = new DocumentCountResponse(counts);
+
+        reportUploadService.upload(S3_KEY_PREFIX, response);
+
+        return response;
     }
 
     private long getDocumentCount(String baseUrl, String clusterName) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
-            .pathSegment(indexName, "_count")
+            .pathSegment(searchComparisonProperties.indexName(), "_count")
             .toUriString();
 
         LOGGER.info(String.format("Querying document count for %s cluster using URL: %s", clusterName, url));

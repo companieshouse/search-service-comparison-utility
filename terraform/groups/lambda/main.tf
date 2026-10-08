@@ -48,6 +48,7 @@ module "lambda" {
     BLUE_SEARCH_CLUSTER_URL  = local.service_secrets["blue_search_cluster_url"]
     GREEN_SEARCH_CLUSTER_URL = local.service_secrets["green_search_cluster_url"]
     USE_AWS_SIGV4            = true
+    S3_BUCKET_NAME           = local.s3_bucket_name
   }
 
   lambda_cloudwatch_event_rules = local.lambda_cloudwatch_event_rules
