@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,8 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import software.amazon.awssdk.services.s3.model.S3Exception;
-import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
@@ -36,7 +33,7 @@ class DocumentCountServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private S3UploadClient s3UploadClient;
+    private ReportUploadService reportUploadService;
 
     private DocumentCountService client;
 
@@ -49,8 +46,7 @@ class DocumentCountServiceTest {
                 "alpha_search"
             ),
             restTemplate,
-            s3UploadClient,
-            new ObjectMapper()
+                reportUploadService
         );
     }
 
@@ -77,7 +73,7 @@ class DocumentCountServiceTest {
         assertEquals(1234, response.totalDocuments().blue());
         assertEquals(5678, response.totalDocuments().green());
 
-        verify(s3UploadClient).uploadFile(anyString(), anyString());
+        verify(reportUploadService).upload(anyString(), any(DocumentCountResponse.class));
     }
 
     @Test
@@ -139,8 +135,8 @@ class DocumentCountServiceTest {
             eq(CountResponse.class)))
             .thenReturn(ResponseEntity.ok(greenCountResponse));
 
-        org.mockito.Mockito.doThrow(S3Exception.builder().message("Upload failed").build())
-            .when(s3UploadClient).uploadFile(anyString(), anyString());
+        org.mockito.Mockito.doThrow(new SearchComparisonException("Failed to upload report to S3"))
+            .when(reportUploadService).upload(anyString(), any(DocumentCountResponse.class));
 
         SearchComparisonException exception = assertThrows(
             SearchComparisonException.class, () -> client.getDocumentCounts());

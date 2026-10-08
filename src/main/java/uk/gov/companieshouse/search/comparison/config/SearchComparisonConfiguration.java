@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
+import uk.gov.companieshouse.search.comparison.service.ReportUploadService;
 
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -65,9 +66,13 @@ public class SearchComparisonConfiguration {
     }
 
     @Bean
-    public DocumentCountService documentCount(RestTemplate restTemplate, S3UploadClient s3UploadClient,
-                                               ObjectMapper objectMapper) {
-        return new DocumentCountService(searchComparisonProperties, restTemplate, s3UploadClient, objectMapper);
+    public ReportUploadService s3ReportUploadService(S3UploadClient s3UploadClient, ObjectMapper objectMapper) {
+        return new ReportUploadService(s3UploadClient, objectMapper);
+    }
+
+    @Bean
+    public DocumentCountService documentCount(RestTemplate restTemplate, ReportUploadService reportUploadService) {
+        return new DocumentCountService(searchComparisonProperties, restTemplate, reportUploadService);
     }
 
     @Bean
