@@ -59,7 +59,8 @@ public class SearchComparisonConfiguration {
     }
 
     private static boolean useAwsSigV4() {
-        return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
+        // return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
+        return false; // For local testing, set to false. In production, set to true.
     }
 
     @Bean
@@ -90,10 +91,12 @@ public class SearchComparisonConfiguration {
     @Bean
     public ComparisonOrchestratorService comparisonOrchestratorService(
             DocumentCountService documentCountService,
-            MatchQueryComparisonService matchQueryComparisonService) {
+            MatchQueryComparisonService matchQueryComparisonService,
+            ReportUploadService reportUploadService) {
         return new ComparisonOrchestratorService(
                 documentCountService,
                 matchQueryComparisonService,
+                reportUploadService,
                 defaultQuery,
                 defaultSize
         );
