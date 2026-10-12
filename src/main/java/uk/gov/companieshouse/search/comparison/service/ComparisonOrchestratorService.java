@@ -12,6 +12,7 @@ public class ComparisonOrchestratorService {
 
     private static final Logger logger = LoggerFactory.getLogger("search-service-comparison-utility");
     private static final String S3_KEY_PREFIX = "comparison-results";
+    private static final String ERROR = "error";
 
     private final Map<String, ComparisonService> services;
     private final ReportUploadService reportUploadService;
@@ -54,7 +55,7 @@ public class ComparisonOrchestratorService {
     public Map<String, Object> orchestrate(Event event) {
         if (event == null || event.getDetails() == null || event.getDetails().isEmpty()) {
             logger.info("No details provided in event");
-            return Map.of("error", "No details provided in event");
+            return Map.of(ERROR, "No details provided in event");
         }
 
         logger.info(String.format("Orchestration started for %d operation(s)", event.getDetails().size()));
@@ -72,7 +73,7 @@ public class ComparisonOrchestratorService {
                 logger.error("Unknown operation: " + operation);
                 combinedResults.put(
                         operation,
-                        Map.of("error", "Unknown operation: " + operation)
+                        Map.of(ERROR, "Unknown operation: " + operation)
                 );
                 continue;
             }
@@ -85,7 +86,7 @@ public class ComparisonOrchestratorService {
                 logger.error("Operation " + operation + " failed: " + e.getMessage(), e);
                 combinedResults.put(
                         operation,
-                        Map.of("error", "Failed to execute " + operation + ": " + e.getMessage())
+                        Map.of(ERROR, "Failed to execute " + operation + ": " + e.getMessage())
                 );
             }
         }

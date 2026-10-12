@@ -123,7 +123,7 @@ public class SearchComparisonConfiguration {
         return List.of(
                 documentCountService,
                 matchQueryService
-                // New strategies added here automatically
+                // New strategies added here
         );
     }
 

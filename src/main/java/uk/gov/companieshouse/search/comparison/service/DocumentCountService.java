@@ -19,7 +19,6 @@ import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 public class DocumentCountService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
-    private static final String S3_KEY_PREFIX = "document-counts";
 
     private final SearchComparisonProperties searchComparisonProperties;
     private final RestTemplate restTemplate;
@@ -42,8 +41,6 @@ public class DocumentCountService {
 
         var counts = new DocumentCountResponse.DocumentCounts(blueCount, greenCount);
         var response = new DocumentCountResponse(counts);
-
-        //reportUploadService.upload(S3_KEY_PREFIX, response);
 
         return response;
     }
