@@ -19,6 +19,7 @@ public class ComparisonOrchestratorService {
     private static final String DOCUMENT_COUNT = "DOCUMENT_COUNT";
     private static final String MATCH_QUERY = "MATCH_QUERY";
     private static final String DEFAULT_OPERATION = DOCUMENT_COUNT;
+    private static final String ERROR = "error";
     private static final String S3_KEY_PREFIX = "comparison-results";
 
     private final DocumentCountService documentCountService;
@@ -43,7 +44,7 @@ public class ComparisonOrchestratorService {
     public Map<String, Object> orchestrate(Event event) {
         if (event == null || event.getDetails() == null || event.getDetails().isEmpty()) {
             logger.info("Orchestration skipped: no event details provided");
-            return Map.of("error", "No details provided in event");
+            return Map.of(ERROR, "No details provided in event");
         }
 
         logger.info(String.format("Orchestration started for %d operation(s)", event.getDetails().size()));
@@ -60,7 +61,7 @@ public class ComparisonOrchestratorService {
 
         logger.info("Orchestration completed successfully");
         // Save combined results to S3
-        // reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
+          reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
         return combinedResults;
     }
 
@@ -76,12 +77,12 @@ public class ComparisonOrchestratorService {
                 case MATCH_QUERY -> handleMatchQuery(query, size);
                 default -> {
                     logger.error(String.format("Unknown operation: %s", operation));
-                    yield Map.of("error", "Unknown operation: " + operation);
+                    yield Map.of(ERROR, "Unknown operation: " + operation);
                 }
             };
         } catch (Exception e) {
             logger.error(String.format("Error executing operation: %s", operation), e);
-            return Map.of("error", "Operation failed: " + e.getMessage());
+            return Map.of(ERROR, "Operation failed: " + e.getMessage());
         }
     }
 
@@ -90,7 +91,7 @@ public class ComparisonOrchestratorService {
         DocumentCountResponse response = documentCountService.getDocumentCounts();
         if (response == null || response.totalDocuments() == null) {
             logger.info("Document count retrieval returned no data");
-            return Map.of("error", "No document count response");
+            return Map.of(ERROR, "No document count response");
         }
         Map<String, Object> countMap = new HashMap<>();
         countMap.put("blue", response.totalDocuments().blue());
@@ -106,7 +107,7 @@ public class ComparisonOrchestratorService {
             Map<String, MatchQueryResult> queryResults = matchQueryComparisonService.compare(query, size);
             if (queryResults == null) {
                 logger.info("Match query comparison returned no data");
-                return Map.of("error", "No match query results");
+                return Map.of(ERROR, "No match query results");
             }
 
             logger.info(String.format("Match query comparison completed: query=[%s], size=[%d]", query, size));
@@ -115,7 +116,7 @@ public class ComparisonOrchestratorService {
             return response;
         } catch (SearchComparisonException e) {
             logger.error(String.format("Match query comparison failed: %s", e.getMessage()), e);
-            return Map.of("error", "Match query comparison failed");
+            return Map.of(ERROR, "Match query comparison failed");
         }
     }
 

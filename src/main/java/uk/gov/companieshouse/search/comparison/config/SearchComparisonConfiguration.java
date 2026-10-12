@@ -59,8 +59,7 @@ public class SearchComparisonConfiguration {
     }
 
     private static boolean useAwsSigV4() {
-        // return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
-        return false; // For local testing, set to false. In production, set to true.
+        return Boolean.parseBoolean(System.getenv(USE_AWS_SIGV4));
     }
 
     @Bean

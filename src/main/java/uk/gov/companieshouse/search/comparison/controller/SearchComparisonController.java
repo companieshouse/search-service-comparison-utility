@@ -14,7 +14,6 @@ import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorSer
 
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/documents")
@@ -67,8 +66,8 @@ public class SearchComparisonController {
     @PostMapping("/compare")
     public ResponseEntity<Map<String, Object>> compareDocuments(@RequestBody Event event) {
         LOGGER.info("Starting document comparison for operations: " + event.getDetails().stream()
-                .map(detail -> detail.getOperation())
-                .collect(Collectors.toList()));
+                .map(Event.Detail::getOperation)
+                .toList());
         try {
             Map<String, Object> result = comparisonOrchestratorService.orchestrate(event);
             LOGGER.info("Document comparison completed successfully");

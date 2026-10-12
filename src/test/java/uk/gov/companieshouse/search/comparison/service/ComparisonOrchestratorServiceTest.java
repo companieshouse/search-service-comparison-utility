@@ -3,7 +3,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -124,7 +123,7 @@ class ComparisonOrchestratorServiceTest {
         when(detail.getQuery()).thenReturn(null);
         when(detail.getSize()).thenReturn(0);
 
-        when(matchQueryComparisonService.compare(eq(DEFAULT_QUERY), eq(DEFAULT_SIZE)))
+        when(matchQueryComparisonService.compare(DEFAULT_QUERY, DEFAULT_SIZE))
                 .thenReturn(Map.of());
 
         service.orchestrate(event);
