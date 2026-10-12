@@ -96,6 +96,24 @@ class ComparisonOrchestratorServiceTest {
         assertEquals(matchQueryResult, opResult.get("match_query_test company"));
     }
 
+    @Test void shouldReturnMatchQueryErrorWhenCompareReturnsNull() {
+        Event event = mock(Event.class);
+        Event.Detail detail = mock(Event.Detail.class);
+
+        when(event.getDetails()).thenReturn(List.of(detail));
+        when(detail.getOperation()).thenReturn("MATCH_QUERY");
+        when(detail.getQuery()).thenReturn("test company");
+        when(detail.getSize()).thenReturn(40);
+
+        when(matchQueryComparisonService.compare("test company",40)).thenReturn(null);
+
+        Map<String, Object> result = service.orchestrate(event);
+
+        Map<?, ?> opResult = opResult(result, "MATCH_QUERY");
+        assertEquals("No match query results", opResult.get("error"));
+    }
+
+
     @Test void shouldReturnMatchQueryErrorWhenCompareThrowsException() {
         Event event = mock(Event.class);
         Event.Detail detail = mock(Event.Detail.class);
