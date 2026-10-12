@@ -14,8 +14,7 @@ import java.util.Map;
 
 public class ComparisonOrchestratorService {
 
-   // private static final Logger logger = LoggerFactory.getLogger(ComparisonOrchestratorService.class);
-    private static final Logger logger = uk.gov.companieshouse.logging.LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final Logger logger = LoggerFactory.getLogger("search-service-comparison-utility");
 
     private static final String DOCUMENT_COUNT = "DOCUMENT_COUNT";
     private static final String MATCH_QUERY = "MATCH_QUERY";
