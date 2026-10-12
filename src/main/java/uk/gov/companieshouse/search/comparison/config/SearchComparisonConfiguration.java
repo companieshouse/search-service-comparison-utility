@@ -129,9 +129,11 @@ public class SearchComparisonConfiguration {
 
     @Bean
     public ComparisonOrchestratorService comparisonOrchestratorService(
-            List<ComparisonService> comparisonServices) {
+            List<ComparisonService> comparisonServices,
+            ReportUploadService reportUploadService) {
         return new ComparisonOrchestratorService(
                 comparisonServices,
+                reportUploadService,
                 defaultQuery,
                 defaultSize
         );

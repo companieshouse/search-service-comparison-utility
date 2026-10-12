@@ -1,13 +1,8 @@
 package uk.gov.companieshouse.search.comparison.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.handler.Event;
-import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
-import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
-import uk.gov.companieshouse.search.comparison.service.ComparisonService;
-
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +10,11 @@ import java.util.stream.Collectors;
 
 public class ComparisonOrchestratorService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ComparisonOrchestratorService.class);
+    private static final Logger logger = LoggerFactory.getLogger("search-service-comparison-utility");
+    private static final String S3_KEY_PREFIX = "comparison-results";
 
-   // private final DocumentCountService documentCountService;
-   // private final MatchQueryComparisonService matchQueryComparisonService;
     private final Map<String, ComparisonService> services;
+    private final ReportUploadService reportUploadService;
     private final String defaultQuery;
     private final int defaultSize;
 
@@ -32,18 +27,16 @@ public class ComparisonOrchestratorService {
      * @param defaultSize default result size for operations
      */
     public ComparisonOrchestratorService(
-            //DocumentCountService documentCountService,
-            //MatchQueryComparisonService matchQueryComparisonService,
             List<ComparisonService> serviceList,
+            ReportUploadService reportUploadService,
             String defaultQuery,
             int defaultSize) {
-        //this.documentCountService = documentCountService;
-        //this.matchQueryComparisonService = matchQueryComparisonService;
         this.services = serviceList.stream()
                 .collect(Collectors.toMap(
                         ComparisonService::getOperation,
                         service -> service
                 ));
+        this.reportUploadService = reportUploadService;
         this.defaultQuery = defaultQuery;
         this.defaultSize = defaultSize;
 
@@ -60,22 +53,15 @@ public class ComparisonOrchestratorService {
      */
     public Map<String, Object> orchestrate(Event event) {
         if (event == null || event.getDetails() == null || event.getDetails().isEmpty()) {
-            logger.warn("No details provided in event");
+            logger.info("No details provided in event");
             return Map.of("error", "No details provided in event");
         }
 
-        logger.info("Starting orchestration for event with " + event.getDetails().size() + " details");
-
+        logger.info(String.format("Orchestration started for %d operation(s)", event.getDetails().size()));
         Map<String, Object> combinedResults = new LinkedHashMap<>();
 
         for (Event.Detail detail : event.getDetails()) {
             String operation = detail.getOperation();
-
-            // Use hardcoded default if operation is null or empty
-//            if (operation == null || operation.isEmpty()) {
-//                operation = "MATCH_QUERY"; // default operation
-//            }
-
             // Use default values if not provided in event
 //            String query = detail.getQuery() != null ? detail.getQuery() : defaultQuery;
 //            int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
@@ -106,7 +92,7 @@ public class ComparisonOrchestratorService {
 
         logger.info("Orchestration completed with " + combinedResults.size() + " operation results");
         // Save combined results to S3
-       // s3StorageService.save(combinedResults);
+        //   reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
         return combinedResults;
     }
 }

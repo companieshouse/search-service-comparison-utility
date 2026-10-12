@@ -43,7 +43,7 @@ public class DocumentCountService {
         var counts = new DocumentCountResponse.DocumentCounts(blueCount, greenCount);
         var response = new DocumentCountResponse(counts);
 
-        reportUploadService.upload(S3_KEY_PREFIX, response);
+        //reportUploadService.upload(S3_KEY_PREFIX, response);
 
         return response;
     }

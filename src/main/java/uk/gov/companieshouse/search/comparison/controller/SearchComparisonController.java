@@ -47,23 +47,6 @@ public class SearchComparisonController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-/*
-    @GetMapping("/match-query")
-    public ResponseEntity<Map<String, MatchQueryResult>> compareMatchQuery(
-            @RequestParam(value = "query", defaultValue = "GIRLONTHEGROUND") String query,
-            @RequestParam(value = "size", defaultValue = "40") int size) {
-        LOGGER.info("Compare match query for ordered alpha key: " + query);
-        try {
-            Map<String, MatchQueryResult> result = matchQueryComparisonService.compare(query, size);
-            LOGGER.info("Match query comparison completed for: " + query);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            LOGGER.error("Error during match query comparison: " + e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    */
 
     @PostMapping("/match-query")
     public ResponseEntity<Map<String, Object>> compareMatchQuery(@RequestBody Event.Detail detail) {
@@ -76,20 +59,6 @@ public class SearchComparisonController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    /*
-    @PostMapping("/match-query")
-    public ResponseEntity<Map<String, MatchQueryResult>> compareMatchQuery(@RequestBody Event event) {
-        LOGGER.info("Compare match query for ordered alpha key: " + event.getDetails(0).getQuery());
-        try {
-            Map<String, MatchQueryResult> result = matchQueryComparisonService.compare(query, size);
-            LOGGER.info("Match query comparison completed for: " + query);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            LOGGER.error("Error during match query comparison: " + e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    } */
 
     @PostMapping("/compare")
     public ResponseEntity<Map<String, Object>> compareDocuments(@RequestBody Event event) {
