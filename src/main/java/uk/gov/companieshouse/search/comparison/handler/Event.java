@@ -1,26 +1,28 @@
 
 package uk.gov.companieshouse.search.comparison.handler;
 
+import java.util.List;
+
 public class Event {
     // AWS wraps event's data in a "detail" field
     // which contains the actual event data
     // Until we don't need a complex data structure
     // we can just use a simple class to represent the event
     // and avoid a custom deserializer
-    private Detail detail;
+    private List<Detail> details;
 
-    public Detail getDetail() {
-        return detail;
+    public List<Detail> getDetails() {
+        return details;
     }
 
-    public void setDetail(Detail detail) {
-        this.detail = detail;
+    public void setDetails(List<Detail> details) {
+        this.details = details;
     }
 
     @Override
     public String toString() {
         return "Event{" +
-                "detail=" + detail +
+                "details=" + details +
                 '}';
     }
 

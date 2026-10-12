@@ -9,6 +9,9 @@ import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
+import uk.gov.companieshouse.search.comparison.handler.Event;
+import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
+
 
 import java.util.Map;
 
@@ -19,11 +22,15 @@ public class SearchComparisonController {
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
     private final DocumentCountService documentCountService;
     private final MatchQueryComparisonService matchQueryComparisonService;
+    private final ComparisonOrchestratorService comparisonOrchestratorService;
+
 
     public SearchComparisonController(DocumentCountService documentCountService,
-                                      MatchQueryComparisonService matchQueryComparisonService) {
+                                      MatchQueryComparisonService matchQueryComparisonService,
+                                      ComparisonOrchestratorService comparisonOrchestratorService) {
         this.documentCountService = documentCountService;
         this.matchQueryComparisonService = matchQueryComparisonService;
+        this.comparisonOrchestratorService = comparisonOrchestratorService;
 
     }
 
@@ -51,6 +58,22 @@ public class SearchComparisonController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             LOGGER.error("Error during match query comparison: " + e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @PostMapping("/compare")
+    public ResponseEntity<Map<String, Object>> compareDocuments(@RequestBody Event event) {
+        LOGGER.info("Starting document comparison for operations: " + event.getDetails().stream()
+                .map(Event.Detail::getOperation)
+                .toList());
+        try {
+            Map<String, Object> result = comparisonOrchestratorService.orchestrate(event);
+            LOGGER.info("Document comparison completed successfully");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            LOGGER.error("Error during document comparison: " + e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

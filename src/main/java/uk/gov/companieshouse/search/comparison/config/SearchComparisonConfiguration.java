@@ -8,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 import software.amazon.awssdk.services.s3.S3Client;
 import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
@@ -17,6 +18,12 @@ import uk.gov.companieshouse.search.comparison.service.ReportUploadService;
 @Configuration
 @PropertySource("classpath:application.properties")
 public class SearchComparisonConfiguration {
+
+    @Value("${search.default-query}")
+    private String defaultQuery;
+
+    @Value("${search.default-size}")
+    private int defaultSize;
 
     // Environment variable used to switch between a local unsigned OpenSearch client and an
     // AWS SigV4-signed client.
@@ -79,5 +86,20 @@ public class SearchComparisonConfiguration {
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
         return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper);
     }
+
+    @Bean
+    public ComparisonOrchestratorService comparisonOrchestratorService(
+            DocumentCountService documentCountService,
+            MatchQueryComparisonService matchQueryComparisonService,
+            ReportUploadService reportUploadService) {
+        return new ComparisonOrchestratorService(
+                documentCountService,
+                matchQueryComparisonService,
+                reportUploadService,
+                defaultQuery,
+                defaultSize
+        );
+    }
+
 
 }
