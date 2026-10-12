@@ -8,11 +8,14 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.services.s3.S3Client;
+import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountComparisonService;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
 import uk.gov.companieshouse.search.comparison.service.ComparisonService;
+import uk.gov.companieshouse.search.comparison.service.ReportUploadService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
@@ -23,25 +26,24 @@ import java.util.List;
 public class SearchComparisonConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger("search-service-comparison-utility");
 
-    @Value("${BLUE_SEARCH_CLUSTER_URL}")
-    private String blueSearchClusterUrl;
-
-    @Value("${GREEN_SEARCH_CLUSTER_URL}")
-    private String greenSearchClusterUrl;
-
-    @Value("${search.index-name}")
-    private String indexName;
-
     @Value("${search.default-query}")
     private String defaultQuery;
 
     @Value("${search.default-size}")
     private int defaultSize;
 
-
     // Environment variable used to switch between a local unsigned OpenSearch client and an
     // AWS SigV4-signed client.
     private static final String USE_AWS_SIGV4 = "USE_AWS_SIGV4";
+
+    private final SearchComparisonProperties searchComparisonProperties;
+
+    @Value("${s3.bucket.name}")
+    private String s3BucketName;
+
+    public SearchComparisonConfiguration(SearchComparisonProperties searchComparisonProperties) {
+        this.searchComparisonProperties = searchComparisonProperties;
+    }
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -69,8 +71,23 @@ public class SearchComparisonConfiguration {
     }
 
     @Bean
-    public DocumentCountService documentCount(RestTemplate restTemplate) {
-        return new DocumentCountService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate);
+    public S3Client s3Client() {
+        return S3Client.create();
+    }
+
+    @Bean
+    public S3UploadClient s3UploadClient(S3Client s3Client) {
+        return new S3UploadClient(s3Client, s3BucketName);
+    }
+
+    @Bean
+    public ReportUploadService s3ReportUploadService(S3UploadClient s3UploadClient, ObjectMapper objectMapper) {
+        return new ReportUploadService(s3UploadClient, objectMapper);
+    }
+
+    @Bean
+    public DocumentCountService documentCount(RestTemplate restTemplate, ReportUploadService reportUploadService) {
+        return new DocumentCountService(searchComparisonProperties, restTemplate, reportUploadService);
     }
 
     /**
@@ -90,7 +107,7 @@ public class SearchComparisonConfiguration {
      */
     @Bean
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        return new MatchQueryComparisonService(blueSearchClusterUrl, greenSearchClusterUrl, indexName, restTemplate, objectMapper);
+        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper);
     }
 
     /**

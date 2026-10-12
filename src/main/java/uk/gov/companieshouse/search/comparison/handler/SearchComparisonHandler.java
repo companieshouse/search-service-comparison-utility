@@ -10,6 +10,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonConfiguration;
 import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
+import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 
 public class SearchComparisonHandler implements RequestHandler<Event, Map<String, Object>> {
 
@@ -18,15 +19,12 @@ public class SearchComparisonHandler implements RequestHandler<Event, Map<String
     private static final String ERROR = "error";
     private static final String BODY = "body";
 
-    private static final ObjectMapper objectMapper;
-    private static final ComparisonOrchestratorService orchestratorService;
+    private static final AnnotationConfigApplicationContext context =
+            new AnnotationConfigApplicationContext(SearchComparisonProperties.class, SearchComparisonConfiguration.class);
 
-    static {
-        try (var context = new AnnotationConfigApplicationContext(SearchComparisonConfiguration.class)) {
-            orchestratorService = context.getBean(ComparisonOrchestratorService.class);
-            objectMapper = context.getBean(ObjectMapper.class);
-        }
-    }
+    private static final ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
+    private static final ComparisonOrchestratorService orchestratorService =
+            context.getBean(ComparisonOrchestratorService.class);
 
     @Override
     public Map<String, Object> handleRequest(Event event, Context context) {
