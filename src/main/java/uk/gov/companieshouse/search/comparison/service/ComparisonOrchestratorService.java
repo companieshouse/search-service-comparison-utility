@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class ComparisonOrchestratorService {
 
     private static final Logger logger = LoggerFactory.getLogger("search-service-comparison-utility");
-    private static final String S3_KEY_PREFIX = "comparison-results";
+    private static final String S3_KEY_PREFIX = "comparison-report";
     private static final String ERROR = "error";
 
     private final Map<String, ComparisonService> services;
@@ -91,7 +91,7 @@ public class ComparisonOrchestratorService {
 
         logger.info("Orchestration completed with " + combinedResults.size() + " operation results");
         // Save combined results to S3
-        //   reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
+           reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
         return combinedResults;
     }
 }
