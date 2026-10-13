@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.search.comparison.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -83,7 +82,7 @@ class ComparisonOrchestratorServiceTest {
 
         assertEquals(matchResult, result.get("match_query"));
         assertEquals(countResult, result.get("document_count"));
-        verify(reportUploadService).upload(eq("comparison-report"), eq(result));
+        verify(reportUploadService).upload("comparison-report", result);
     }
 
 
@@ -100,7 +99,7 @@ class ComparisonOrchestratorServiceTest {
         assertTrue(result.containsKey("unknown_op"));
         Map<?, ?> error = opResult(result, "unknown_op");
         assertEquals("Unknown operation: unknown_op", error.get("error"));
-        verify(reportUploadService).upload(eq("comparison-report"), eq(result));
+        verify(reportUploadService).upload("comparison-report", result);
     }
 
 
@@ -117,7 +116,7 @@ class ComparisonOrchestratorServiceTest {
 
         Map<?, ?> error = opResult(result, "match_query");
         assertEquals("Failed to execute match_query: test", error.get("error"));
-        verify(reportUploadService).upload(eq("comparison-report"), eq(result));
+        verify(reportUploadService).upload("comparison-report", result);
     }
 
     private Map<?, ?> opResult(Map<String, Object> result, String operation) {
