@@ -63,9 +63,7 @@ public class ComparisonOrchestratorService {
 
         for (Event.Detail detail : event.getDetails()) {
             String operation = detail.getOperation();
-            // Use default values if not provided in event
-//            String query = detail.getQuery() != null ? detail.getQuery() : defaultQuery;
-//            int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
+
             logger.info("Processing operation: " + operation);
             ComparisonService service = services.get(operation);
 

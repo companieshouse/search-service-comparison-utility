@@ -27,12 +27,18 @@ public class MatchQueryComparisonService implements ComparisonService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final SearchComparisonProperties searchComparisonProperties;
+    private final String defaultQuery;
+    private final int defaultSize;
 
     public MatchQueryComparisonService(SearchComparisonProperties searchComparisonProperties,
-                                       RestTemplate restTemplate, ObjectMapper objectMapper) {
+                                       RestTemplate restTemplate, ObjectMapper objectMapper,
+                                       String defaultQuery,
+                                       int defaultSize) {
         this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.defaultQuery = defaultQuery;
+        this.defaultSize = defaultSize;
     }
 
     @Override
@@ -42,12 +48,11 @@ public class MatchQueryComparisonService implements ComparisonService {
 
     @Override
     public Map<String, Object> compare(Event.Detail detail) throws SearchComparisonException {
-
+        LOGGER.info("Executing MATCH_QUERY comparison strategy");
         // Use default values if not provided in event
-       // String query = detail.getQuery() != null ? detail.getQuery() : defaultQuery;
-        //int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
-        String query = detail.getQuery();
-        int size = detail.getSize();
+        String query = detail.getQuery() != null ? detail.getQuery() : defaultQuery;
+        int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
+
         JsonNode blue = Objects.requireNonNull(
                 runSearch(searchComparisonProperties.blueSearchClusterUrl(), query, size),
                 "Blue search result cannot be null");
@@ -89,6 +94,7 @@ public class MatchQueryComparisonService implements ComparisonService {
         result.setDiscrepancies(displayedDiscrepancies);
 
         String key = "match_query_" + query;
+        LOGGER.info("MATCH_QUERY comparison completed successfully");
         return Collections.singletonMap(key, result);
     }
 

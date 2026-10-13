@@ -47,8 +47,9 @@ class MatchQueryComparisonServiceTest {
                         "alpha_search"
                 ),
                 restTemplate,
-                objectMapper
-        );
+                objectMapper,
+                "test company",
+                40 );
     }
 
     @Test

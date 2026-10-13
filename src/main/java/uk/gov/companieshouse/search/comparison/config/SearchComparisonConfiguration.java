@@ -107,7 +107,8 @@ public class SearchComparisonConfiguration {
      */
     @Bean
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper);
+        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper, defaultQuery,
+                defaultSize);
     }
 
     /**
