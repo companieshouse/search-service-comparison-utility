@@ -77,9 +77,6 @@ class SearchComparisonControllerTest {
 
         when(comparisonOrchestratorService.orchestrate(any(Event.class))).thenReturn(response);
 
-//        mockMvc.perform(post("/documents/compare")
-//                        .param("query", query)
-//                        .param("size", String.valueOf(size)))
         mockMvc.perform(post("/documents/compare")
                         .contentType("application/json")
                         .content("{\"details\":[{\"query\":\"TESTCOMPANY\",\"operation\":\"match_query\"}]}"))
