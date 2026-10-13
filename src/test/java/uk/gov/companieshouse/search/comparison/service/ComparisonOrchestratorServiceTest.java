@@ -38,9 +38,7 @@ class ComparisonOrchestratorServiceTest {
 
         orchestratorService = new ComparisonOrchestratorService(
                 List.of(matchQueryService, documentCountService),
-                reportUploadService,
-                "default-query",
-                40);
+                reportUploadService);
     }
 
     @Test

@@ -134,9 +134,7 @@ public class SearchComparisonConfiguration {
             ReportUploadService reportUploadService) {
         return new ComparisonOrchestratorService(
                 comparisonServices,
-                reportUploadService,
-                defaultQuery,
-                defaultSize
+                reportUploadService
         );
     }
 

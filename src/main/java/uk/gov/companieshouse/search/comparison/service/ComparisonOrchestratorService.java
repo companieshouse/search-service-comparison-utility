@@ -16,30 +16,23 @@ public class ComparisonOrchestratorService {
 
     private final Map<String, ComparisonService> services;
     private final ReportUploadService reportUploadService;
-    private final String defaultQuery;
-    private final int defaultSize;
 
     /**
      * Constructor that accepts a list of ComparisonService implementations.
      * Builds an internal map for O(1) lookup by operation type.
      *
      * @param serviceList list of all available comparison services
-     * @param defaultQuery default query string for operations
-     * @param defaultSize default result size for operations
+     * @param reportUploadService  service for uploading reports to S3
      */
     public ComparisonOrchestratorService(
             List<ComparisonService> serviceList,
-            ReportUploadService reportUploadService,
-            String defaultQuery,
-            int defaultSize) {
+            ReportUploadService reportUploadService) {
         this.services = serviceList.stream()
                 .collect(Collectors.toMap(
                         ComparisonService::getOperation,
                         service -> service
                 ));
         this.reportUploadService = reportUploadService;
-        this.defaultQuery = defaultQuery;
-        this.defaultSize = defaultSize;
 
         logger.info("ComparisonOrchestratorService initialized with " + serviceList.size() + " comparison strategies");
         logger.info("Registered operations: " + this.services.keySet());
