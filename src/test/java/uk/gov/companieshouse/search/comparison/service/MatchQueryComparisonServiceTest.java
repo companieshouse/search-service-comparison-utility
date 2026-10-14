@@ -48,7 +48,6 @@ class MatchQueryComparisonServiceTest {
                 ),
                 restTemplate,
                 objectMapper,
-                "test company",
                 40 );
     }
 

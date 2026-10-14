@@ -26,9 +26,6 @@ import java.util.List;
 public class SearchComparisonConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger("search-service-comparison-utility");
 
-    @Value("${search.default-query}")
-    private String defaultQuery;
-
     @Value("${search.default-size}")
     private int defaultSize;
 
@@ -106,7 +103,7 @@ public class SearchComparisonConfiguration {
      */
     @Bean
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper, defaultQuery,
+        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper,
                 defaultSize);
     }
 
