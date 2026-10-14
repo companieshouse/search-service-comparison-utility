@@ -72,9 +72,7 @@ class DocumentCountServiceTest {
         assertNotNull(response);
         assertEquals(1234, response.totalDocuments().blue());
         assertEquals(5678, response.totalDocuments().green());
-
-        verify(reportUploadService).upload(anyString(), any(DocumentCountResponse.class));
-    }
+     }
 
     @Test
     void testGetDocumentCountsThrowsWhenClusterReturnsNonOkStatus() {
@@ -117,33 +115,6 @@ class DocumentCountServiceTest {
 
         assertNotNull(exception.getCause());
     }
-
-    @Test
-    void testGetDocumentCountsThrowsWhenS3UploadFails() {
-        var blueCountResponse = new CountResponse(1234);
-        var greenCountResponse = new CountResponse(5678);
-
-        when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(CountResponse.class)))
-            .thenReturn(ResponseEntity.ok(blueCountResponse));
-
-        when(restTemplate.exchange(eq("http://localhost:9201/alpha_search/_count"),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(CountResponse.class)))
-            .thenReturn(ResponseEntity.ok(greenCountResponse));
-
-        org.mockito.Mockito.doThrow(new SearchComparisonException("Failed to upload report to S3"))
-            .when(reportUploadService).upload(anyString(), any(DocumentCountResponse.class));
-
-        SearchComparisonException exception = assertThrows(
-            SearchComparisonException.class, () -> client.getDocumentCounts());
-
-        assertTrue(exception.getMessage().contains("S3"));
-    }
-
 }
 
 

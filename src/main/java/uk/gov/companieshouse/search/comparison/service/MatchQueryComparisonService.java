@@ -12,13 +12,14 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class MatchQueryComparisonService {
+public class MatchQueryComparisonService implements ComparisonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("search-service-comparison-utility");
     private static final int MAX_DISCREPANCIES = 10;
@@ -26,15 +27,29 @@ public class MatchQueryComparisonService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final SearchComparisonProperties searchComparisonProperties;
+    private final int defaultSize;
 
     public MatchQueryComparisonService(SearchComparisonProperties searchComparisonProperties,
-                                       RestTemplate restTemplate, ObjectMapper objectMapper) {
+                                       RestTemplate restTemplate, ObjectMapper objectMapper,
+                                       int defaultSize) {
         this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.defaultSize = defaultSize;
     }
 
-    public Map<String, MatchQueryResult> compare(String query, int size) throws SearchComparisonException {
+    @Override
+    public String getOperation() {
+        return "MATCH_QUERY";
+    }
+
+    @Override
+    public Map<String, Object> compare(Event.Detail detail) throws SearchComparisonException {
+        LOGGER.info("Executing MATCH_QUERY comparison strategy");
+        // Use default value if not provided in event
+        String query = detail.getQuery() != null ? detail.getQuery() : "";
+        int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
+
         JsonNode blue = Objects.requireNonNull(
                 runSearch(searchComparisonProperties.blueSearchClusterUrl(), query, size),
                 "Blue search result cannot be null");
@@ -76,6 +91,7 @@ public class MatchQueryComparisonService {
         result.setDiscrepancies(displayedDiscrepancies);
 
         String key = "match_query_" + query;
+        LOGGER.info("MATCH_QUERY comparison completed successfully");
         return Collections.singletonMap(key, result);
     }
 

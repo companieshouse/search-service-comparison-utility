@@ -10,13 +10,24 @@ import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
 import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
+import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
+import uk.gov.companieshouse.search.comparison.service.DocumentCountComparisonService;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;
 import uk.gov.companieshouse.search.comparison.service.MatchQueryComparisonService;
+import uk.gov.companieshouse.search.comparison.service.ComparisonService;
 import uk.gov.companieshouse.search.comparison.service.ReportUploadService;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+
+import java.util.List;
 
 @Configuration
 @PropertySource("classpath:application.properties")
 public class SearchComparisonConfiguration {
+    private static final Logger LOG = LoggerFactory.getLogger("search-service-comparison-utility");
+
+    @Value("${search.default-size}")
+    private int defaultSize;
 
     // Environment variable used to switch between a local unsigned OpenSearch client and an
     // AWS SigV4-signed client.
@@ -75,9 +86,53 @@ public class SearchComparisonConfiguration {
         return new DocumentCountService(searchComparisonProperties, restTemplate, reportUploadService);
     }
 
+    /**
+     * Strategy: DocumentCountComparisonService
+     * Wraps DocumentCountService to implement ComparisonService interface.
+     */
+    @Bean
+    public DocumentCountComparisonService documentCountComparisonService(
+            DocumentCountService documentCountService) {
+        LOG.info("Creating DocumentCountComparisonService strategy bean");
+        return new DocumentCountComparisonService(documentCountService);
+    }
+
+    /**
+     * Strategy: MatchQueryComparisonService
+     * Implement ComparisonService interface directly.
+     */
     @Bean
     public MatchQueryComparisonService matchQueryComparison(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper);
+        return new MatchQueryComparisonService(searchComparisonProperties, restTemplate, objectMapper,
+                defaultSize);
     }
+
+    /**
+     * Aggregates all ComparisonService implementations into a list.
+     * Spring automatically collects all beans implementing ComparisonService.
+     * New strategies are automatically registered when added as @Bean.
+     */
+    @Bean
+    public List<ComparisonService> comparisonServices(
+            DocumentCountComparisonService documentCountService,
+            MatchQueryComparisonService matchQueryService) {
+        LOG.info("Registering comparison service strategies");
+        return List.of(
+                documentCountService,
+                matchQueryService
+                // New strategies added here
+        );
+    }
+
+    @Bean
+    public ComparisonOrchestratorService comparisonOrchestratorService(
+            List<ComparisonService> comparisonServices,
+            ReportUploadService reportUploadService) {
+        return new ComparisonOrchestratorService(
+                comparisonServices,
+                reportUploadService
+        );
+    }
+
 
 }
