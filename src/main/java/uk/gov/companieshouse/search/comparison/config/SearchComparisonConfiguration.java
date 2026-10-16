@@ -82,8 +82,8 @@ public class SearchComparisonConfiguration {
     }
 
     @Bean
-    public DocumentCountService documentCount(RestTemplate restTemplate, ReportUploadService reportUploadService) {
-        return new DocumentCountService(searchComparisonProperties, restTemplate, reportUploadService);
+    public DocumentCountService documentCount(RestTemplate restTemplate) {
+        return new DocumentCountService(searchComparisonProperties, restTemplate);
     }
 
     /**
