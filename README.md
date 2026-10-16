@@ -84,7 +84,7 @@ Example values are environment-specific and should be provided through deploymen
     {
       "action": "compare",
       "operation": "MATCH_QUERY",
-      "query": " GIRLSDAYSCHOOLTRUST ",
+      "query": " GIRLONTHEGROUND ",
       "size": 100
     }
   ]
@@ -134,7 +134,7 @@ Example:
     {
       "action": "compare",
       "operation": "MATCH_QUERY",
-      "query": " GIRLSDAYSCHOOLTRUST ",
+      "query": " GIRLONTHEGROUND ",
       "size": 100
     }
   ]
