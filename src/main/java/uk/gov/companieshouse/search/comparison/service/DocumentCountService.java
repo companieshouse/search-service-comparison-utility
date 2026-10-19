@@ -22,13 +22,10 @@ public class DocumentCountService {
 
     private final SearchComparisonProperties searchComparisonProperties;
     private final RestTemplate restTemplate;
-    private final ReportUploadService reportUploadService;
 
-    public DocumentCountService(SearchComparisonProperties searchComparisonProperties, RestTemplate restTemplate,
-                                 ReportUploadService reportUploadService) {
+    public DocumentCountService(SearchComparisonProperties searchComparisonProperties, RestTemplate restTemplate) {
         this.searchComparisonProperties = searchComparisonProperties;
         this.restTemplate = restTemplate;
-        this.reportUploadService = reportUploadService;
     }
 
     public DocumentCountResponse getDocumentCounts() {

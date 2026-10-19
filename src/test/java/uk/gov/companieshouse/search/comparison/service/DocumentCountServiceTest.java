@@ -32,9 +32,6 @@ class DocumentCountServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
-    @Mock
-    private ReportUploadService reportUploadService;
-
     private DocumentCountService client;
 
     @BeforeEach
@@ -45,8 +42,7 @@ class DocumentCountServiceTest {
                 "http://localhost:9201",
                 "alpha_search"
             ),
-            restTemplate,
-                reportUploadService
+            restTemplate
         );
     }
 
