@@ -1,5 +1,16 @@
 {
-    "detail": {
-        "action": "generate_report"
+  "details": [
+    {
+      "action": "compare",
+      "operation": "DOCUMENT_COUNT",
+      "query": null,
+      "size": 0
+    },
+    {
+      "action": "compare",
+      "operation": "MATCH_QUERY",
+      "query": " GIRLONTHEGROUND ",
+      "size": 100
     }
+  ]
 }
