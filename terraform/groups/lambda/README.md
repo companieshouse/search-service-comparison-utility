@@ -58,6 +58,7 @@
 | <a name="input_opensearch_domain_names"></a> [opensearch\_domain\_names](#input\_opensearch\_domain\_names) | The names of the OpenSearch domains to which the Lambda function needs access. | `list(string)` | <pre>[<br/>  "alphabetical-search"<br/>]</pre> | no |
 | <a name="input_release_artifact_key"></a> [release\_artifact\_key](#input\_release\_artifact\_key) | The release artifact key for the Lambda function | `string` | n/a | yes |
 | <a name="input_release_bucket_name"></a> [release\_bucket\_name](#input\_release\_bucket\_name) | The name of the S3 bucket containing the release artefact for the Lambda function | `string` | n/a | yes |
+| <a name="input_s3_report_retention_days"></a> [s3\_report\_retention\_days](#input\_s3\_report\_retention\_days) | The number of days to retain search comparison reports in the S3 bucket | `number` | `90` | no |
 
 ## Outputs
 
