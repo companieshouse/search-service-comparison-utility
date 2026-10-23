@@ -1,12 +1,12 @@
 locals {
 
-  service_name          = "search-service-comparison-utility"
-  stack_name            = "search-service"
-  lambda_function_name  = local.service_name
-  kms_alias             = "alias/aws/ssm"
-  json_folder           = "input_json/${var.aws_profile}/${var.environment}"
-  s3_bucket_name        = "search-comparison-reports"
-  s3_report_retention_days = 180
+  service_name             = "search-service-comparison-utility"
+  stack_name               = "search-service"
+  lambda_function_name     = local.service_name
+  kms_alias                = "alias/aws/ssm"
+  json_folder              = "input_json/${var.aws_profile}/${var.environment}"
+  s3_bucket_name           = "search-comparison-reports"
+  s3_report_retention_days = var.s3_report_retention_days
 
   vpc_name                     = local.stack_secrets["vpc_name"]
   lambda_vpc_access_subnet_ids = data.aws_subnets.application.ids

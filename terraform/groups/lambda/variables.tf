@@ -81,3 +81,9 @@ variable "opensearch_domain_names" {
   default     = ["alphabetical-search"]
   description = "The names of the OpenSearch domains to which the Lambda function needs access."
 }
+
+variable "s3_report_retention_days" {
+  type        = number
+  description = "The number of days to retain search comparison reports in the S3 bucket"
+  default     = 90
+}
