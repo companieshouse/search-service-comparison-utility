@@ -83,6 +83,28 @@ class ComparisonOrchestratorServiceTest {
         verify(reportUploadService).upload("comparison-report", result);
     }
 
+    @Test
+    void shouldReturnListWhenSameOperationAppearsMultipleTimes() {
+        Event event = mock(Event.class);
+        Event.Detail detail1 = mock(Event.Detail.class);
+        Event.Detail detail2 = mock(Event.Detail.class);
+
+        when(event.getDetails()).thenReturn(List.of(detail1, detail2));
+        when(detail1.getOperation()).thenReturn("match_query");
+        when(detail2.getOperation()).thenReturn("match_query");
+
+        Map<String, Object> first = Map.of("id", "1");
+        Map<String, Object> second = Map.of("id", "2");
+
+        when(matchQueryService.compare(detail1)).thenReturn(first);
+        when(matchQueryService.compare(detail2)).thenReturn(second);
+
+        Map<String, Object> result = orchestratorService.orchestrate(event);
+
+        Object raw = result.get("match_query");
+        assertInstanceOf(List.class, raw);
+        assertEquals(List.of(first, second), raw);
+    }
 
     @Test
     void shouldReturnUnknownOperationErrorWhenNoServiceRegistered() {
