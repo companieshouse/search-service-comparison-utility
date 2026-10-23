@@ -3,6 +3,7 @@ package uk.gov.companieshouse.search.comparison.service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.handler.Event;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class ComparisonOrchestratorService {
         }
 
         logger.info(String.format("Orchestration started for %d operation(s)", event.getDetails().size()));
-        Map<String, Object> combinedResults = new LinkedHashMap<>();
+        Map<String, List<Map<String, Object>>> groupedResults = new LinkedHashMap<>();
 
         for (Event.Detail detail : event.getDetails()) {
             String operation = detail.getOperation();
@@ -62,29 +63,49 @@ public class ComparisonOrchestratorService {
 
             if (service == null) {
                 logger.error("Unknown operation: " + operation);
-                combinedResults.put(
-                        operation,
-                        Map.of(ERROR, "Unknown operation: " + operation)
+                groupedResults
+                        .computeIfAbsent(operation, key -> new ArrayList<>())
+                        .add(Map.of(ERROR, "Unknown operation: " + operation)
                 );
                 continue;
             }
 
             try {
                 Map<String, Object> result = service.compare(detail);
-                combinedResults.put(operation, result);
+                groupedResults
+                        .computeIfAbsent(operation, key -> new ArrayList<>())
+                        .add(result);
+
                 logger.info("Operation " + operation + " completed successfully");
             } catch (Exception e) {
                 logger.error("Operation " + operation + " failed: " + e.getMessage(), e);
-                combinedResults.put(
-                        operation,
-                        Map.of(ERROR, "Failed to execute " + operation + ": " + e.getMessage())
-                );
+                groupedResults
+                        .computeIfAbsent(operation, key -> new ArrayList<>())
+                        .add(Map.of(
+                                ERROR,
+                                "Failed to execute "
+                                        + operation
+                                        + ": "
+                                        + e.getMessage()
+                        ));
+
             }
         }
 
-        logger.info("Orchestration completed with " + combinedResults.size() + " operation results");
+        // single entry => object, multiple entries => list.
+        Map<String, Object> combinedResults = new LinkedHashMap<>();
+        groupedResults.forEach((operation, results) ->
+                combinedResults.put(operation, results.size() == 1 ? results.getFirst() : results)
+        );
+
+        logger.info("Orchestration completed with " + combinedResults.size() + " operation result group(s)");
+
         // Save combined results to S3
-           reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
+        reportUploadService.upload(S3_KEY_PREFIX, combinedResults);
+
         return combinedResults;
+
     }
+
+
 }
