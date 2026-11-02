@@ -78,7 +78,8 @@ class SearchComparisonControllerTest {
 
         mockMvc.perform(post("/documents/compare")
                         .contentType("application/json")
-                        .content("{\"details\":[{\"query\":\"TESTCOMPANY\",\"operation\":\"match_query\"}]}"))
+                        .content("""
+                                {"details":[{"query":"TESTCOMPANY","operation":"match_query"}]}"""))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(1)))
                 .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)))
@@ -102,7 +103,8 @@ class SearchComparisonControllerTest {
 
         mockMvc.perform(post("/documents/compare")
                         .contentType("application/json")
-                        .content("{\"details\":[{\"query\":\"GIRLONTHEGROUND\",\"operation\":\"match_query\"}]}"))
+                        .content("""
+                                {"details":[{"query":"GIRLONTHEGROUND","operation":"match_query"}]}"""))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(1)))
                 .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(1)))
@@ -126,7 +128,8 @@ class SearchComparisonControllerTest {
 
         mockMvc.perform(post("/documents/match-query")
                         .contentType("application/json")
-                        .content("{\"query\":\"TESTCOMPANY\",\"operation\":\"match_query\"}"))
+                        .content("""
+                                {"query":"TESTCOMPANY","operation":"match_query"}"""))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.match_query_" + query + ".blue_total", is(5)))
                 .andExpect(jsonPath("$.match_query_" + query + ".green_total", is(3)))

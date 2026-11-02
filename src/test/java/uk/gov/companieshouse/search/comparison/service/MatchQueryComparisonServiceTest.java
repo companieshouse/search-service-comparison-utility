@@ -56,13 +56,13 @@ class MatchQueryComparisonServiceTest {
         String query = "test company";
         int size = 40;
 
-        JsonNode blueResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 1, \"relation\": \"eq\"}, " +
-                        "\"hits\": [{\"_id\": \"123\", \"_source\": {\"company_name\": \"TEST COMPANY\"}}]}}"
+        JsonNode blueResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 1, "relation": "eq"}, \
+                "hits": [{"_id": "123", "_source": {"company_name": "TEST COMPANY"}}]}}"""
         );
-        JsonNode greenResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 1, \"relation\": \"eq\"}, " +
-                        "\"hits\": [{\"_id\": \"123\", \"_source\": {\"company_name\": \"TEST COMPANY\"}}]}}"
+        JsonNode greenResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 1, "relation": "eq"}, \
+                "hits": [{"_id": "123", "_source": {"company_name": "TEST COMPANY"}}]}}"""
         );
 
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search?pretty"),
@@ -97,13 +97,13 @@ class MatchQueryComparisonServiceTest {
         String query = "test company";
         int size = 40;
 
-        JsonNode blueResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 1, \"relation\": \"eq\"}, " +
-                        "\"hits\": [{\"_id\": \"123\", \"_source\": {\"company_name\": \"TEST COMPANY\"}}]}}"
+        JsonNode blueResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 1, "relation": "eq"}, \
+                "hits": [{"_id": "123", "_source": {"company_name": "TEST COMPANY"}}]}}"""
         );
-        JsonNode greenResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 1, \"relation\": \"eq\"}, " +
-                        "\"hits\": [{\"_id\": \"999\", \"_source\": {\"company_name\": \"TEST COMPANY\"}}]}}"
+        JsonNode greenResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 1, "relation": "eq"}, \
+                "hits": [{"_id": "999", "_source": {"company_name": "TEST COMPANY"}}]}}"""
         );
 
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search?pretty"),
@@ -140,11 +140,11 @@ class MatchQueryComparisonServiceTest {
         String query = "nonexistent";
         int size = 40;
 
-        JsonNode blueResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 0, \"relation\": \"eq\"}, \"hits\": []}}"
+        JsonNode blueResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 0, "relation": "eq"}, "hits": []}}"""
         );
-        JsonNode greenResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 0, \"relation\": \"eq\"}, \"hits\": []}}"
+        JsonNode greenResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 0, "relation": "eq"}, "hits": []}}"""
         );
 
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search?pretty"),
@@ -178,12 +178,12 @@ class MatchQueryComparisonServiceTest {
         String query = "test company";
         int size = 40;
 
-        JsonNode blueResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 1, \"relation\": \"eq\"}, " +
-                        "\"hits\": [{\"_id\": \"123\", \"_source\": {\"company_name\": \"TEST COMPANY\"}}]}}"
+        JsonNode blueResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 1, "relation": "eq"}, \
+                "hits": [{"_id": "123", "_source": {"company_name": "TEST COMPANY"}}]}}"""
         );
-        JsonNode greenResponse = objectMapper.readTree(
-                "{\"hits\": {\"total\": {\"value\": 0, \"relation\": \"eq\"}, \"hits\": []}}"
+        JsonNode greenResponse = objectMapper.readTree("""
+                {"hits": {"total": {"value": 0, "relation": "eq"}, "hits": []}}"""
         );
 
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_search?pretty"),
