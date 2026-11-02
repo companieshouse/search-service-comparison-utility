@@ -3,7 +3,7 @@ package uk.gov.companieshouse.search.comparison.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import uk.gov.companieshouse.logging.Logger;
