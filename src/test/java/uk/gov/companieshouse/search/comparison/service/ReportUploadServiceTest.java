@@ -44,7 +44,7 @@ class ReportUploadServiceTest {
     }
 
     @Test
-    void shouldUploadSerialisedJsonContent() throws Exception {
+    void shouldUploadSerialisedJsonContent() {
         var report = new DocumentCountResponse(new DocumentCountResponse.DocumentCounts(1234, 5678));
 
         reportUploadService.upload("document-counts", report);

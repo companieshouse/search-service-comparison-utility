@@ -55,7 +55,6 @@ class SearchComparisonControllerTest {
     @Test
     void testCompareMatchQuery() throws Exception {
         String query = "TESTCOMPANY";
-        int size = 40;
 
         List<Discrepancy> discrepancies = new ArrayList<>();
 
@@ -89,7 +88,6 @@ class SearchComparisonControllerTest {
     @Test
     void testCompareMatchQueryWithDefaultParameters() throws Exception {
         String query = "GIRLONTHEGROUND";
-        int size = 40;
 
         var matchResult = new MatchQueryResult();
         matchResult.setBlueTotal(1);

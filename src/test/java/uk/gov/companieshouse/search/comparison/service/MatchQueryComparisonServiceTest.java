@@ -52,7 +52,7 @@ class MatchQueryComparisonServiceTest {
     }
 
     @Test
-    void shouldReturnNoDiscrepanciesWhenBlueAndGreenResultsMatch() throws Exception {
+    void shouldReturnNoDiscrepanciesWhenBlueAndGreenResultsMatch() {
         String query = "test company";
         int size = 40;
 
@@ -93,7 +93,7 @@ class MatchQueryComparisonServiceTest {
     }
 
     @Test
-    void shouldReturnDiscrepanciesWhenBlueAndGreenResultsDiffer() throws Exception {
+    void shouldReturnDiscrepanciesWhenBlueAndGreenResultsDiffer() {
         String query = "test company";
         int size = 40;
 
@@ -136,7 +136,7 @@ class MatchQueryComparisonServiceTest {
     }
 
     @Test
-    void shouldReturnNoDiscrepanciesWhenNoResultsFound() throws Exception {
+    void shouldReturnNoDiscrepanciesWhenNoResultsFound() {
         String query = "nonexistent";
         int size = 40;
 
@@ -174,7 +174,7 @@ class MatchQueryComparisonServiceTest {
     }
 
     @Test
-    void shouldReturnDiscrepancyWhenBlueHasHitAndGreenHasNoHit() throws Exception {
+    void shouldReturnDiscrepancyWhenBlueHasHitAndGreenHasNoHit() {
         String query = "test company";
         int size = 40;
 
