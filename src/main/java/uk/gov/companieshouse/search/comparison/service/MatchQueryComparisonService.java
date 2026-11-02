@@ -142,7 +142,7 @@ public class MatchQueryComparisonService implements ComparisonService {
 
         List<HitDoc> result = new ArrayList<>();
         for (JsonNode hit : hitsArray) {
-            String id = hit.path("_id").asText(null);
+            String id = hit.path("_id").asString(null);
             JsonNode sourceNode = hit.path("_source");
             Map<String, Object> source = objectMapper.convertValue(sourceNode, new TypeReference<>() {});
             result.add(new HitDoc(id, source));
