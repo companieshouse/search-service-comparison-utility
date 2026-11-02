@@ -282,8 +282,10 @@ class MatchQueryComparisonServiceTest {
         var jacksonException = JacksonIOException.construct(new IOException("Serialisation failed"), null);
         when(mockObjectMapper.writeValueAsString(any())).thenThrow(jacksonException);
 
+        Event.Detail detail = new Event.Detail();
+
         SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class, () -> serviceWithMockMapper.compare(new Event.Detail()));
+                SearchComparisonException.class, () -> serviceWithMockMapper.compare(detail));
 
         assertNotNull(exception);
         assertTrue(exception.getMessage().contains("Failed to serialize search request"));
