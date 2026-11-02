@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +36,9 @@ class MatchQueryComparisonServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private ObjectMapper mockObjectMapper;
 
     private ObjectMapper objectMapper;
     private MatchQueryComparisonService service;
@@ -258,6 +264,31 @@ class MatchQueryComparisonServiceTest {
 
         assertNotNull(exception);
         assertTrue(exception.getMessage().contains("Failed to retrieve search results"));
+    }
+
+    @Test
+    void shouldThrowSearchComparisonExceptionWhenRequestBodySerialisationFails() {
+
+        MatchQueryComparisonService serviceWithMockMapper = new MatchQueryComparisonService(
+                new SearchComparisonProperties(
+                        "http://localhost:9200",
+                        "http://localhost:9201",
+                        "alpha_search"
+                ),
+                restTemplate,
+                mockObjectMapper,
+                40);
+
+        var jacksonException = JacksonIOException.construct(new IOException("Serialisation failed"), null);
+        when(mockObjectMapper.writeValueAsString(any())).thenThrow(jacksonException);
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class, () -> serviceWithMockMapper.compare(new Event.Detail()));
+
+        assertNotNull(exception);
+        assertTrue(exception.getMessage().contains("Failed to serialize search request"));
+        assertEquals(jacksonException, exception.getCause());
+        verifyNoInteractions(restTemplate);
     }
 
 }

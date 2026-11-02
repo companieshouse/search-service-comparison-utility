@@ -7,7 +7,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +30,9 @@ class ReportUploadServiceTest {
 
     @Mock
     private S3UploadClient s3UploadClient;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     private ReportUploadService reportUploadService;
 
@@ -78,5 +85,21 @@ class ReportUploadServiceTest {
                 () -> reportUploadService.upload("document-counts", report));
 
         assertTrue(exception.getMessage().contains("S3"));
+    }
+
+    @Test
+    void shouldThrowSearchComparisonExceptionWhenSerialisationFails() {
+        var report = new DocumentCountResponse(new DocumentCountResponse.DocumentCounts(1234, 5678));
+        var reportUploadServiceWithMockMapper = new ReportUploadService(s3UploadClient, objectMapper);
+        var jacksonException = JacksonIOException.construct(new IOException("Serialisation failed"), null);
+
+        when(objectMapper.writeValueAsString(report)).thenThrow(jacksonException);
+
+        SearchComparisonException exception = assertThrows(SearchComparisonException.class,
+                () -> reportUploadServiceWithMockMapper.upload("document-counts", report));
+
+        assertEquals("Failed to serialise report for S3 upload", exception.getMessage());
+        assertEquals(jacksonException, exception.getCause());
+        verifyNoInteractions(s3UploadClient);
     }
 }
