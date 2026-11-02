@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.search.comparison.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import uk.gov.companieshouse.logging.Logger;
@@ -33,7 +33,7 @@ public class ReportUploadService {
             String content = objectMapper.writeValueAsString(report);
             s3UploadClient.uploadFile(key, content);
             LOGGER.info(String.format("Successfully uploaded report to S3 with key: %s", key));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Failed to serialise report for S3 upload: " + e.getMessage(), e);
             throw new SearchComparisonException("Failed to serialise report for S3 upload", e);
         } catch (S3Exception e) {

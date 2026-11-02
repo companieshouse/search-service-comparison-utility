@@ -18,10 +18,11 @@
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
-        <spring-boot.version>3.5.14</spring-boot.version>
+        <ch-dependency-bom.version>0.1.26</ch-dependency-bom.version>
+        <spring-boot-dependencies.version>4.1.1</spring-boot-dependencies.version>
         <aws-sdk.version>2.47.6</aws-sdk.version>
-        <aws-serverless-java-container-springboot3.version>2.1.5</aws-serverless-java-container-springboot3.version>
-        <structured-logging.version>3.0.57</structured-logging.version>
+        <aws-serverless-java-container-springboot4.version>3.0.5</aws-serverless-java-container-springboot4.version>
+        <main-class>uk.gov.companieshouse.search.comparison.SearchComparisonApplication</main-class>
 
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.sources>src/main</sonar.sources>
@@ -40,9 +41,16 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>uk.gov.companieshouse</groupId>
+                <artifactId>ch-dependency-bom</artifactId>
+                <version>${ch-dependency-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
+                <version>${spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -53,7 +61,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>${spring-boot.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -79,19 +86,17 @@
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
-            <artifactId>aws-serverless-java-container-springboot3</artifactId>
-            <version>${aws-serverless-java-container-springboot3.version}</version>
+            <artifactId>aws-serverless-java-container-springboot4</artifactId>
+            <version>${aws-serverless-java-container-springboot4.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
-            <version>${structured-logging.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot.version}</version>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -100,16 +105,7 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
-                <configuration>
-                    <release>${jdk.version}</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -125,7 +121,6 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>${sonar-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -142,12 +137,14 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <exclude>module-info.class</exclude>
+                                <exclude>META-INF/versions/*/module-info.class</exclude>
                             </excludes>
                         </filter>
                     </filters>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>uk.gov.companieshouse.search.comparison.SearchComparisonApplication</mainClass>
+                            <mainClass>${main-class}</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

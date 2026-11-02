@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.search.comparison.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
@@ -16,8 +16,8 @@ import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.Discrepancy;
 import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.core.JacksonException;
 
 public class MatchQueryComparisonService implements ComparisonService {
 
@@ -120,7 +120,7 @@ public class MatchQueryComparisonService implements ComparisonService {
 
             return responseBody;
 
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error(String.format("Error serializing request body for %s: %s", baseUrl, e.getMessage()), e);
             throw new SearchComparisonException("Failed to serialize search request for " + baseUrl, e);
         } catch (RestClientException e) {
@@ -142,7 +142,7 @@ public class MatchQueryComparisonService implements ComparisonService {
 
         List<HitDoc> result = new ArrayList<>();
         for (JsonNode hit : hitsArray) {
-            String id = hit.path("_id").asText(null);
+            String id = hit.path("_id").asString(null);
             JsonNode sourceNode = hit.path("_source");
             Map<String, Object> source = objectMapper.convertValue(sourceNode, new TypeReference<>() {});
             result.add(new HitDoc(id, source));

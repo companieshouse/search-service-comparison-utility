@@ -32,7 +32,8 @@ class S3UploadClientTest {
     @Test
     void testUploadFilePutsObjectToConfiguredBucketAndKey() {
         String key = "document-counts/test.json";
-        String content = "{\"total_documents\":{\"blue\":1,\"green\":2}}";
+        String content = """
+                {"total_documents":{"blue":1,"green":2}}""";
 
         s3UploadClient.uploadFile(key, content);
 
