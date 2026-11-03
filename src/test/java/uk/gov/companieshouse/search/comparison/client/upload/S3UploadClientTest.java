@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import uk.gov.companieshouse.search.comparison.client.S3UploadClient;
 
 @ExtendWith(MockitoExtension.class)
 class S3UploadClientTest {

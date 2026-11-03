@@ -9,7 +9,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
-import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
+import uk.gov.companieshouse.search.comparison.client.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.service.ComparisonOrchestratorService;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountComparisonService;
 import uk.gov.companieshouse.search.comparison.service.DocumentCountService;

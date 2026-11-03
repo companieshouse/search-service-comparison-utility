@@ -21,7 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-import uk.gov.companieshouse.search.comparison.client.upload.S3UploadClient;
+import uk.gov.companieshouse.search.comparison.client.S3UploadClient;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 
