@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.search.comparison.client.upload;
+package uk.gov.companieshouse.search.comparison.client;
 
 import java.nio.charset.StandardCharsets;
 import software.amazon.awssdk.core.sync.RequestBody;

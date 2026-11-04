@@ -18,7 +18,7 @@
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
-        <ch-dependency-bom.version>0.1.26</ch-dependency-bom.version>
+        <ch-dependency-bom.version>0.1.36</ch-dependency-bom.version>
         <spring-boot-dependencies.version>4.1.1</spring-boot-dependencies.version>
         <aws-sdk.version>2.47.6</aws-sdk.version>
         <aws-serverless-java-container-springboot4.version>3.0.5</aws-serverless-java-container-springboot4.version>
