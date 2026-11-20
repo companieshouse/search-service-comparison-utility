@@ -16,6 +16,7 @@ import uk.gov.companieshouse.search.comparison.exception.SearchComparisonExcepti
 import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
+import uk.gov.companieshouse.search.comparison.util.ValidationUtils;
 
 public class DocumentCountService {
 
@@ -37,9 +38,11 @@ public class DocumentCountService {
             throw new SearchComparisonException(
                     "indexName is required and must contain blue_index_name and green_index_name");
         }
-        String blueIndexName = detail.getIndexName().getBlueIndexName();
-        String greenIndexName = detail.getIndexName().getGreenIndexName();
 
+        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
+        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
+
+/*
         if (blueIndexName == null || blueIndexName.isBlank()) {
             LOGGER.error("DOCUMENT_COUNT validation failed: blue_index_name is missing or blank");
             throw new SearchComparisonException(
@@ -51,7 +54,7 @@ public class DocumentCountService {
             throw new SearchComparisonException(
                     "green_index_name is required and must not be blank");
         }
-
+*/
         long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, "blue");
         long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), greenIndexName, "green");
 

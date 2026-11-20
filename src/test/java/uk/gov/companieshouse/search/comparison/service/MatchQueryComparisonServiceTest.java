@@ -12,7 +12,6 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 
 import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
 import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -26,8 +25,11 @@ import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
@@ -272,7 +274,6 @@ class MatchQueryComparisonServiceTest {
         var jacksonException = JacksonIOException.construct(new IOException("Serialisation failed"), null);
         when(mockObjectMapper.writeValueAsString(any())).thenThrow(jacksonException);
 
-        //Event.Detail detail = new Event.Detail();
         Event.Detail detail = buildDetailWithIndexes("test company", 40, DEFAULT_INDEX, DEFAULT_INDEX);
 
         SearchComparisonException exception = assertThrows(
@@ -303,57 +304,27 @@ class MatchQueryComparisonServiceTest {
         verifyNoInteractions(restTemplate);
     }
 
-    @Test
-    void shouldThrowWhenBlueIndexNameIsNull() {
-
-        Event.Detail detail = buildDetailWithIndexes("test company", 40, null, DEFAULT_INDEX);
+    @ParameterizedTest
+    @MethodSource("invalidIndexNameCases")
+    void shouldThrowWhenIndexNameIsNullOrBlank(String blueIndex, String greenIndex, String expectedMessage) {
+        Event.Detail detail = buildDetailWithIndexes("test company", 40, blueIndex, greenIndex);
 
         SearchComparisonException exception = assertThrows(
                 SearchComparisonException.class,
                 () -> service.compare(detail)
         );
 
-        assertEquals("blue_index_name is required and must not be blank", exception.getMessage());
+        assertEquals(expectedMessage, exception.getMessage());
         verifyNoInteractions(restTemplate);
     }
 
-    @Test
-    void shouldThrowWhenBlueIndexNameIsBlank() {
-        Event.Detail detail = buildDetailWithIndexes("test company", 40, " ", DEFAULT_INDEX);
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> service.compare(detail)
+    private static Stream<Arguments> invalidIndexNameCases() {
+        return Stream.of(
+                Arguments.of(null, DEFAULT_INDEX, "blue_index_name is required and must not be blank"),
+                Arguments.of(" ", DEFAULT_INDEX, "blue_index_name is required and must not be blank"),
+                Arguments.of(DEFAULT_INDEX, null, "green_index_name is required and must not be blank"),
+                Arguments.of(DEFAULT_INDEX, " ", "green_index_name is required and must not be blank")
         );
-
-        assertEquals("blue_index_name is required and must not be blank", exception.getMessage());
-        verifyNoInteractions(restTemplate);
-    }
-
-    @Test
-    void shouldThrowWhenGreenIndexNameIsNull() {
-        Event.Detail detail = buildDetailWithIndexes("test company", 40, DEFAULT_INDEX, null);
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> service.compare(detail)
-        );
-
-        assertEquals("green_index_name is required and must not be blank", exception.getMessage());
-        verifyNoInteractions(restTemplate);
-    }
-
-    @Test
-    void shouldThrowWhenGreenIndexNameIsBlank() {
-        Event.Detail detail = buildDetailWithIndexes("test company", 40, DEFAULT_INDEX, " ");
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> service.compare(detail)
-        );
-
-        assertEquals("green_index_name is required and must not be blank", exception.getMessage());
-        verifyNoInteractions(restTemplate);
     }
 
     private Event.Detail buildDetailWithIndexes(String query, int size, String blueIndex, String greenIndex) {

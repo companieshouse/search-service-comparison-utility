@@ -25,6 +25,11 @@ import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 @ExtendWith(MockitoExtension.class)
 class DocumentCountServiceTest {
 
@@ -135,58 +140,31 @@ class DocumentCountServiceTest {
         verifyNoInteractions(restTemplate);
     }
 
-    @Test
-    void testGetDocumentCountsThrowsWhenBlueIndexNameIsNull() {
-        Event.Detail detail = buildDetailWithIndexes(null, "alpha_search");
+    @ParameterizedTest
+    @MethodSource("invalidIndexNameCases")
+    void testGetDocumentCountsThrowsWhenIndexNameIsNullOrBlank(
+            String blueIndex,
+            String greenIndex,
+            String expectedMessage) {
+        Event.Detail detail = buildDetailWithIndexes(blueIndex, greenIndex);
 
         SearchComparisonException exception = assertThrows(
                 SearchComparisonException.class,
                 () -> client.getDocumentCounts(detail)
         );
 
-        assertEquals("blue_index_name is required and must not be blank", exception.getMessage());
+        assertEquals(expectedMessage, exception.getMessage());
         verifyNoInteractions(restTemplate);
     }
 
-    @Test
-    void testGetDocumentCountsThrowsWhenBlueIndexNameIsBlank() {
-        Event.Detail detail = buildDetailWithIndexes(" ", "alpha_search");
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> client.getDocumentCounts(detail)
+    private static Stream<Arguments> invalidIndexNameCases() {
+        return Stream.of(
+                Arguments.of(null, "alpha_search", "blue_index_name is required and must not be blank"),
+                Arguments.of(" ", "alpha_search", "blue_index_name is required and must not be blank"),
+                Arguments.of("alpha_search", null, "green_index_name is required and must not be blank"),
+                Arguments.of("alpha_search", " ", "green_index_name is required and must not be blank")
         );
-
-        assertEquals("blue_index_name is required and must not be blank", exception.getMessage());
-        verifyNoInteractions(restTemplate);
     }
-
-    @Test
-    void testGetDocumentCountsThrowsWhenGreenIndexNameIsNull() {
-        Event.Detail detail = buildDetailWithIndexes("alpha_search", null);
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> client.getDocumentCounts(detail)
-        );
-
-        assertEquals("green_index_name is required and must not be blank", exception.getMessage());
-        verifyNoInteractions(restTemplate);
-    }
-
-    @Test
-    void testGetDocumentCountsThrowsWhenGreenIndexNameIsBlank() {
-        Event.Detail detail = buildDetailWithIndexes("alpha_search", " ");
-
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> client.getDocumentCounts(detail)
-        );
-
-        assertEquals("green_index_name is required and must not be blank", exception.getMessage());
-        verifyNoInteractions(restTemplate);
-    }
-
 
     private Event.Detail buildDetailWithIndexes(String blueIndex, String greenIndex) {
         Event.IndexName indexName = new Event.IndexName();

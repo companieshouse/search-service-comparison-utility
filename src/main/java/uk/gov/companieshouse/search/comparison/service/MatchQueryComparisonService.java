@@ -9,6 +9,7 @@ import java.util.*;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
@@ -19,6 +20,7 @@ import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.core.JacksonException;
+import uk.gov.companieshouse.search.comparison.util.ValidationUtils;
 
 public class MatchQueryComparisonService implements ComparisonService {
 
@@ -57,21 +59,8 @@ public class MatchQueryComparisonService implements ComparisonService {
                     "indexName is required and must contain blue_index_name and green_index_name");
         }
 
-        String blueIndexName = detail.getIndexName().getBlueIndexName();
-        String greenIndexName = detail.getIndexName().getGreenIndexName();
-        if (blueIndexName == null || blueIndexName.isBlank()) {
-            LOGGER.error("MATCH_QUERY validation failed: blue_index_name is missing or blank");
-            throw new SearchComparisonException(
-                    "blue_index_name is required and must not be blank");
-        }
-
-        if (greenIndexName == null || greenIndexName.isBlank()) {
-            LOGGER.error("MATCH_QUERY validation failed: green_index_name is missing or blank");
-            throw new SearchComparisonException(
-                    "green_index_name is required and must not be blank");
-        }
-
-        //searchComparisonProperties.getBlueIndex();
+        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
+        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
 
         JsonNode blue = Objects.requireNonNull(
                 runSearch(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, query, size),
@@ -119,9 +108,12 @@ public class MatchQueryComparisonService implements ComparisonService {
     }
 
     private JsonNode runSearch(String baseUrl, String indexName, String query, int size) throws SearchComparisonException {
-        //String url = baseUrl + "/" + searchComparisonProperties.indexName() + "/_search?pretty";
+        String url = UriComponentsBuilder.fromUriString(baseUrl)
+                .pathSegment(indexName)
+                .pathSegment("_search")
+                .queryParam("pretty")
+                .toUriString();
 
-        String url = baseUrl + "/" + indexName + "/_search?pretty";
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("size", size);
         body.put("query", Map.of("match", Map.of("items.ordered_alpha_key", Map.of("query", query))));
@@ -149,7 +141,7 @@ public class MatchQueryComparisonService implements ComparisonService {
             throw new SearchComparisonException("Failed to serialize search request for " + baseUrl, e);
         } catch (HttpClientErrorException.NotFound e) {
             String responseBody = e.getResponseBodyAsString();
-            if (responseBody != null && responseBody.contains("index_not_found_exception")) {
+            if (responseBody.contains("index_not_found_exception")) {
                 LOGGER.error(String.format("Index [%s] not found on cluster %s ", indexName, baseUrl));
                 throw new SearchComparisonException("Index [" + indexName + "] not found on cluster " + baseUrl, e);
             }
