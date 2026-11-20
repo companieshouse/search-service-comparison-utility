@@ -42,19 +42,6 @@ public class DocumentCountService {
         String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
         String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
 
-/*
-        if (blueIndexName == null || blueIndexName.isBlank()) {
-            LOGGER.error("DOCUMENT_COUNT validation failed: blue_index_name is missing or blank");
-            throw new SearchComparisonException(
-                    "blue_index_name is required and must not be blank");
-        }
-
-        if (greenIndexName == null || greenIndexName.isBlank()) {
-            LOGGER.error("DOCUMENT_COUNT validation failed: green_index_name is missing or blank");
-            throw new SearchComparisonException(
-                    "green_index_name is required and must not be blank");
-        }
-*/
         long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, "blue");
         long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), greenIndexName, "green");
 

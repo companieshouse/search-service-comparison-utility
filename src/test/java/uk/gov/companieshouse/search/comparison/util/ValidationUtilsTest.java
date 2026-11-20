@@ -16,12 +16,7 @@ class ValidationUtilsTest {
     @ParameterizedTest
     @MethodSource("blankIndexNameCases")
     void validateIndexName_throwsWhenNullOrBlank(String indexName, String fieldName, String expectedMessage) {
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> ValidationUtils.validateIndexName(indexName, fieldName)
-        );
-
-        assertEquals(expectedMessage, exception.getMessage());
+        assertInvalidIndexName(indexName, fieldName, expectedMessage);
     }
 
     @ParameterizedTest
@@ -30,12 +25,8 @@ class ValidationUtilsTest {
             String indexName,
             String fieldName,
             String expectedMessage) {
-        SearchComparisonException exception = assertThrows(
-                SearchComparisonException.class,
-                () -> ValidationUtils.validateIndexName(indexName, fieldName)
-        );
 
-        assertEquals(expectedMessage, exception.getMessage());
+        assertInvalidIndexName(indexName, fieldName, expectedMessage);
     }
 
     @ParameterizedTest
@@ -44,6 +35,15 @@ class ValidationUtilsTest {
         String result = ValidationUtils.validateIndexName(indexName, fieldName);
 
         assertEquals(indexName, result);
+    }
+
+    private static void assertInvalidIndexName(String indexName, String fieldName, String expectedMessage) {
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> ValidationUtils.validateIndexName(indexName, fieldName)
+        );
+
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     private static Stream<Arguments> blankIndexNameCases() {
