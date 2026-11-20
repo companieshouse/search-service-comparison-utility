@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +21,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
 
@@ -48,6 +47,7 @@ class DocumentCountServiceTest {
 
     @Test
     void testGetDocumentCounts() {
+        Event.Detail detail = buildDetailWithIndexes("alpha_search", "alpha_search");
         var blueCountResponse = new CountResponse(1234);
         var greenCountResponse = new CountResponse(5678);
 
@@ -63,7 +63,7 @@ class DocumentCountServiceTest {
             eq(CountResponse.class)))
             .thenReturn(ResponseEntity.ok(greenCountResponse));
 
-        DocumentCountResponse response = client.getDocumentCounts();
+        DocumentCountResponse response = client.getDocumentCounts(detail);
 
         assertNotNull(response);
         assertEquals(1234, response.totalDocuments().blue());
@@ -72,6 +72,8 @@ class DocumentCountServiceTest {
 
     @Test
     void testGetDocumentCountsThrowsWhenClusterReturnsNonOkStatus() {
+        Event.Detail detail = buildDetailWithIndexes("alpha_search", "alpha_search");
+
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
@@ -79,13 +81,15 @@ class DocumentCountServiceTest {
             .thenReturn(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
 
         SearchComparisonException exception = assertThrows(
-            SearchComparisonException.class, () -> client.getDocumentCounts());
+            SearchComparisonException.class, () -> client.getDocumentCounts(detail));
 
         assertTrue(exception.getMessage().contains("blue"));
     }
 
     @Test
     void testGetDocumentCountsThrowsWhenClusterReturnsNullBody() {
+        Event.Detail detail = buildDetailWithIndexes("alpha_search", "alpha_search");
+
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
@@ -93,13 +97,15 @@ class DocumentCountServiceTest {
             .thenReturn(ResponseEntity.ok(null));
 
         SearchComparisonException exception = assertThrows(
-            SearchComparisonException.class, () -> client.getDocumentCounts());
+            SearchComparisonException.class, () -> client.getDocumentCounts(detail));
 
         assertTrue(exception.getMessage().contains("blue"));
     }
 
     @Test
     void testGetDocumentCountsThrowsWhenRestClientFails() {
+        Event.Detail detail = buildDetailWithIndexes("alpha_search", "alpha_search");
+
         when(restTemplate.exchange(eq("http://localhost:9200/alpha_search/_count"),
             eq(HttpMethod.GET),
             any(HttpEntity.class),
@@ -107,9 +113,89 @@ class DocumentCountServiceTest {
             .thenThrow(new ResourceAccessException("Connection refused"));
 
         SearchComparisonException exception = assertThrows(
-            SearchComparisonException.class, () -> client.getDocumentCounts());
+            SearchComparisonException.class, () -> client.getDocumentCounts(detail));
 
         assertNotNull(exception.getCause());
+    }
+
+
+    @Test
+    void testGetDocumentCountsThrowsWhenIndexNameIsMissing() {
+        Event.Detail detail = new Event.Detail();
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> client.getDocumentCounts(detail)
+        );
+
+        assertEquals(
+                "indexName is required and must contain blue_index_name and green_index_name",
+                exception.getMessage()
+        );
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenBlueIndexNameIsNull() {
+        Event.Detail detail = buildDetailWithIndexes(null, "alpha_search");
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> client.getDocumentCounts(detail)
+        );
+
+        assertEquals("blue_index_name is required and must not be blank", exception.getMessage());
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenBlueIndexNameIsBlank() {
+        Event.Detail detail = buildDetailWithIndexes(" ", "alpha_search");
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> client.getDocumentCounts(detail)
+        );
+
+        assertEquals("blue_index_name is required and must not be blank", exception.getMessage());
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenGreenIndexNameIsNull() {
+        Event.Detail detail = buildDetailWithIndexes("alpha_search", null);
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> client.getDocumentCounts(detail)
+        );
+
+        assertEquals("green_index_name is required and must not be blank", exception.getMessage());
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    void testGetDocumentCountsThrowsWhenGreenIndexNameIsBlank() {
+        Event.Detail detail = buildDetailWithIndexes("alpha_search", " ");
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> client.getDocumentCounts(detail)
+        );
+
+        assertEquals("green_index_name is required and must not be blank", exception.getMessage());
+        verifyNoInteractions(restTemplate);
+    }
+
+
+    private Event.Detail buildDetailWithIndexes(String blueIndex, String greenIndex) {
+        Event.IndexName indexName = new Event.IndexName();
+        indexName.setBlueIndexName(blueIndex);
+        indexName.setGreenIndexName(greenIndex);
+
+        Event.Detail detail = new Event.Detail();
+        detail.setIndexName(indexName);
+        return detail;
     }
 }
 

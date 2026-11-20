@@ -33,11 +33,11 @@ public class SearchComparisonController {
 
     }
 
-    @GetMapping("/count")
-    public ResponseEntity<DocumentCountResponse> getDocumentCount() {
+    @PostMapping("/count")
+    public ResponseEntity<DocumentCountResponse> getDocumentCount(@RequestBody Event.Detail detail) {
         LOGGER.info("Get Document count");
         try {
-            DocumentCountResponse response = documentCountService.getDocumentCounts();
+            DocumentCountResponse response = documentCountService.getDocumentCounts(detail);
             LOGGER.info("Successfully retrieved document counts");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
