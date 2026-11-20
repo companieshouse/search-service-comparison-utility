@@ -25,7 +25,7 @@ public class DocumentCountComparisonService implements ComparisonService {
     public Map<String, Object> compare(Event.Detail detail) {
         LOG.info("Executing DOCUMENT_COUNT comparison strategy");
 
-        DocumentCountResponse response = documentCountService.getDocumentCounts();
+        DocumentCountResponse response = documentCountService.getDocumentCounts(detail);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("blue", response.totalDocuments().blue());

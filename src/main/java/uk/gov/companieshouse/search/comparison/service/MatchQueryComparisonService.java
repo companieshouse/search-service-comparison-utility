@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.search.comparison.service;
 
+import org.springframework.web.client.HttpClientErrorException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -8,6 +9,7 @@ import java.util.*;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
@@ -18,6 +20,7 @@ import uk.gov.companieshouse.search.comparison.model.HitDoc;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.core.JacksonException;
+import uk.gov.companieshouse.search.comparison.util.ValidationUtils;
 
 public class MatchQueryComparisonService implements ComparisonService {
 
@@ -50,11 +53,20 @@ public class MatchQueryComparisonService implements ComparisonService {
         String query = detail.getQuery() != null ? detail.getQuery() : "";
         int size = detail.getSize() > 0 ? detail.getSize() : defaultSize;
 
+        if (detail.getIndexName() == null) {
+            LOGGER.error("MATCH_QUERY validation failed: indexName is missing");
+            throw new SearchComparisonException(
+                    "indexName is required and must contain blue_index_name and green_index_name");
+        }
+
+        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
+        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
+
         JsonNode blue = Objects.requireNonNull(
-                runSearch(searchComparisonProperties.blueSearchClusterUrl(), query, size),
+                runSearch(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, query, size),
                 "Blue search result cannot be null");
         JsonNode green = Objects.requireNonNull(
-                runSearch(searchComparisonProperties.greenSearchClusterUrl(), query, size),
+                runSearch(searchComparisonProperties.greenSearchClusterUrl(), greenIndexName, query, size),
                 "Green search result cannot be null");
 
         List<HitDoc> blueHits = extractHits(blue);
@@ -95,8 +107,12 @@ public class MatchQueryComparisonService implements ComparisonService {
         return Collections.singletonMap(key, result);
     }
 
-    private JsonNode runSearch(String baseUrl, String query, int size) throws SearchComparisonException {
-        String url = baseUrl + "/" + searchComparisonProperties.indexName() + "/_search?pretty";
+    private JsonNode runSearch(String baseUrl, String indexName, String query, int size) throws SearchComparisonException {
+        String url = UriComponentsBuilder.fromUriString(baseUrl)
+                .pathSegment(indexName)
+                .pathSegment("_search")
+                .queryParam("pretty")
+                .toUriString();
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("size", size);
@@ -123,6 +139,13 @@ public class MatchQueryComparisonService implements ComparisonService {
         } catch (JacksonException e) {
             LOGGER.error(String.format("Error serializing request body for %s: %s", baseUrl, e.getMessage()), e);
             throw new SearchComparisonException("Failed to serialize search request for " + baseUrl, e);
+        } catch (HttpClientErrorException.NotFound e) {
+            String responseBody = e.getResponseBodyAsString();
+            if (responseBody.contains("index_not_found_exception")) {
+                LOGGER.error(String.format("Index [%s] not found on cluster %s ", indexName, baseUrl));
+                throw new SearchComparisonException("Index [" + indexName + "] not found on cluster " + baseUrl, e);
+            }
+            throw new SearchComparisonException("404 returned from " + baseUrl, e);
         } catch (RestClientException e) {
             LOGGER.error(String.format("Error querying cluster at %s: %s", baseUrl, e.getMessage()), e);
             throw new SearchComparisonException("Failed to retrieve search results from " + baseUrl, e);

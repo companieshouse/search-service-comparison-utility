@@ -7,10 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+
+import org.springframework.http.*;
 import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -19,20 +20,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
 import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.MatchQueryResult;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class MatchQueryComparisonServiceTest {
+
+    private static final String DEFAULT_INDEX = "alpha_search";
 
     @Mock
     private RestTemplate restTemplate;
@@ -54,7 +57,7 @@ class MatchQueryComparisonServiceTest {
                 ),
                 restTemplate,
                 objectMapper,
-                40 );
+                40);
     }
 
     @Test
@@ -83,9 +86,8 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Event.Detail detail = new Event.Detail();
-        detail.setQuery(query);
-        detail.setSize(size);
+        Event.Detail detail = buildDetailWithIndexes(query, size, DEFAULT_INDEX, DEFAULT_INDEX);
+
 
         Map<String, Object> result = service.compare(detail);
 
@@ -124,9 +126,7 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Event.Detail detail = new Event.Detail();
-        detail.setQuery(query);
-        detail.setSize(size);
+        Event.Detail detail = buildDetailWithIndexes(query, size, DEFAULT_INDEX, DEFAULT_INDEX);
 
         Map<String, Object> result = service.compare(detail);
 
@@ -165,9 +165,7 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Event.Detail detail = new Event.Detail();
-        detail.setQuery(query);
-        detail.setSize(size);
+        Event.Detail detail = buildDetailWithIndexes(query, size, DEFAULT_INDEX, DEFAULT_INDEX);
 
         Map<String, Object> result = service.compare(detail);
 
@@ -204,9 +202,7 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(greenResponse));
 
-        Event.Detail detail = new Event.Detail();
-        detail.setQuery(query);
-        detail.setSize(size);
+        Event.Detail detail = buildDetailWithIndexes(query, size, DEFAULT_INDEX, DEFAULT_INDEX);
 
         Map<String, Object> result = service.compare(detail);
 
@@ -233,9 +229,7 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
 
-        Event.Detail detail = new Event.Detail();
-        detail.setQuery(query);
-        detail.setSize(size);
+        Event.Detail detail = buildDetailWithIndexes(query, size, DEFAULT_INDEX, DEFAULT_INDEX);
 
         SearchComparisonException exception = assertThrows(
                 SearchComparisonException.class, () -> service.compare(detail));
@@ -255,9 +249,7 @@ class MatchQueryComparisonServiceTest {
                 eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
-        Event.Detail detail = new Event.Detail();
-        detail.setQuery(query);
-        detail.setSize(size);
+        Event.Detail detail = buildDetailWithIndexes(query, size, DEFAULT_INDEX, DEFAULT_INDEX);
 
         SearchComparisonException exception = assertThrows(
                 SearchComparisonException.class, () -> service.compare(detail));
@@ -282,7 +274,7 @@ class MatchQueryComparisonServiceTest {
         var jacksonException = JacksonIOException.construct(new IOException("Serialisation failed"), null);
         when(mockObjectMapper.writeValueAsString(any())).thenThrow(jacksonException);
 
-        Event.Detail detail = new Event.Detail();
+        Event.Detail detail = buildDetailWithIndexes("test company", 40, DEFAULT_INDEX, DEFAULT_INDEX);
 
         SearchComparisonException exception = assertThrows(
                 SearchComparisonException.class, () -> serviceWithMockMapper.compare(detail));
@@ -292,5 +284,61 @@ class MatchQueryComparisonServiceTest {
         assertEquals(jacksonException, exception.getCause());
         verifyNoInteractions(restTemplate);
     }
+
+    @Test
+    void shouldThrowWhenIndexNameIsMissing() {
+        Event.Detail detail = new Event.Detail();
+        detail.setQuery("test company");
+        detail.setSize(40);
+        detail.setIndexName(null);
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> service.compare(detail)
+        );
+
+        assertEquals(
+                "indexName is required and must contain blue_index_name and green_index_name",
+                exception.getMessage()
+        );
+        verifyNoInteractions(restTemplate);
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidIndexNameCases")
+    void shouldThrowWhenIndexNameIsNullOrBlank(String blueIndex, String greenIndex, String expectedMessage) {
+        Event.Detail detail = buildDetailWithIndexes("test company", 40, blueIndex, greenIndex);
+
+        SearchComparisonException exception = assertThrows(
+                SearchComparisonException.class,
+                () -> service.compare(detail)
+        );
+
+        assertEquals(expectedMessage, exception.getMessage());
+        verifyNoInteractions(restTemplate);
+    }
+
+    private static Stream<Arguments> invalidIndexNameCases() {
+        return Stream.of(
+                Arguments.of(null, DEFAULT_INDEX, "blue_index_name is required and must not be blank"),
+                Arguments.of(" ", DEFAULT_INDEX, "blue_index_name is required and must not be blank"),
+                Arguments.of(DEFAULT_INDEX, null, "green_index_name is required and must not be blank"),
+                Arguments.of(DEFAULT_INDEX, " ", "green_index_name is required and must not be blank")
+        );
+    }
+
+    private Event.Detail buildDetailWithIndexes(String query, int size, String blueIndex, String greenIndex) {
+        Event.IndexName eventIndexName = new Event.IndexName();
+        eventIndexName.setBlueIndexName(blueIndex);
+        eventIndexName.setGreenIndexName(greenIndex);
+
+        Event.Detail eventDetail = new Event.Detail();
+        eventDetail.setQuery(query);
+        eventDetail.setSize(size);
+        eventDetail.setIndexName(eventIndexName);
+
+        return eventDetail;
+    }
+
 
 }
