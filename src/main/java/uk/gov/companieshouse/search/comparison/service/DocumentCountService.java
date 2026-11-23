@@ -13,8 +13,10 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.search.comparison.config.SearchComparisonProperties;
 import uk.gov.companieshouse.search.comparison.exception.SearchComparisonException;
+import uk.gov.companieshouse.search.comparison.handler.Event;
 import uk.gov.companieshouse.search.comparison.model.CountResponse;
 import uk.gov.companieshouse.search.comparison.model.DocumentCountResponse;
+import uk.gov.companieshouse.search.comparison.util.ValidationUtils;
 
 public class DocumentCountService {
 
@@ -28,11 +30,20 @@ public class DocumentCountService {
         this.restTemplate = restTemplate;
     }
 
-    public DocumentCountResponse getDocumentCounts() {
+    public DocumentCountResponse getDocumentCounts(Event.Detail detail) {
         LOGGER.info("Fetching document counts from blue and green clusters");
 
-        long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), "blue");
-        long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), "green");
+        if (detail.getIndexName() == null) {
+            LOGGER.error("DOCUMENT_COUNT validation failed: indexName is missing");
+            throw new SearchComparisonException(
+                    "indexName is required and must contain blue_index_name and green_index_name");
+        }
+
+        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
+        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
+
+        long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, "blue");
+        long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), greenIndexName, "green");
 
         LOGGER.info(String.format("Blue cluster count: %d, Green cluster count: %d", blueCount, greenCount));
 
@@ -42,9 +53,9 @@ public class DocumentCountService {
         return response;
     }
 
-    private long getDocumentCount(String baseUrl, String clusterName) {
+    private long getDocumentCount(String baseUrl, String indexName, String clusterName) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
-            .pathSegment(searchComparisonProperties.indexName(), "_count")
+            .pathSegment(indexName, "_count")
             .toUriString();
 
         LOGGER.info(String.format("Querying document count for %s cluster using URL: %s", clusterName, url));

@@ -1,6 +1,8 @@
 
 package uk.gov.companieshouse.search.comparison.handler;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class Event {
@@ -31,6 +33,7 @@ public class Event {
         private String operation;
         private String query;
         private int size;
+        private IndexName indexName;
 
         public String getAction() {
             return action;
@@ -64,6 +67,14 @@ public class Event {
             this.size = size;
         }
 
+        public IndexName getIndexName() {
+            return indexName;
+        }
+
+        public void setIndexName(IndexName indexName) {
+            this.indexName = indexName;
+        }
+
 
         @Override
         public String toString() {
@@ -72,9 +83,41 @@ public class Event {
                     ", operation='" + operation + '\'' +
                     ", query='" + query + '\'' +
                     ", size=" + size +
+                    ", indexName=" + indexName +
                     '}';
         }
     }
 
+    public static class IndexName {
+        @JsonProperty("blue_index_name")
+        private String blueIndexName;
+
+        @JsonProperty("green_index_name")
+        private String greenIndexName;
+
+        public String getBlueIndexName() {
+            return blueIndexName;
+        }
+
+        public void setBlueIndexName(String blueIndexName) {
+            this.blueIndexName = blueIndexName;
+        }
+
+        public String getGreenIndexName() {
+            return greenIndexName;
+        }
+
+        public void setGreenIndexName(String greenIndexName) {
+            this.greenIndexName = greenIndexName;
+        }
+
+        @Override
+        public String toString() {
+            return "IndexName{" +
+                    "blueIndexName='" + blueIndexName + '\'' +
+                    ", greenIndexName='" + greenIndexName + '\'' +
+                    '}';
+        }
+    }
 }
 

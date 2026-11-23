@@ -39,17 +39,27 @@ class SearchComparisonControllerTest {
     @MockitoBean
     private ComparisonOrchestratorService comparisonOrchestratorService;
 
+
     @Test
     void testGetDocumentCount() throws Exception {
         var counts = new DocumentCountResponse.DocumentCounts(998, 999);
         var response = new DocumentCountResponse(counts);
 
-        when(documentCountService.getDocumentCounts()).thenReturn(response);
+        when(documentCountService.getDocumentCounts(any(Event.Detail.class))).thenReturn(response);
 
-        mockMvc.perform(get("/documents/count"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.total_documents.blue", is(998)))
-            .andExpect(jsonPath("$.total_documents.green", is(999)));
+        mockMvc.perform(post("/documents/count")
+                        .contentType("application/json")
+                        .content("""
+                            {
+                              "operation": "DOCUMENT_COUNT",
+                              "blueIndexName": "bluealphasearch",
+                              "greenIndexName": "greenalphasearch",
+                              "size": 0
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total_documents.blue", is(998)))
+                .andExpect(jsonPath("$.total_documents.green", is(999)));
     }
 
     @Test
