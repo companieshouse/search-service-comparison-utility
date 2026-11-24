@@ -56,11 +56,11 @@ public class MatchQueryComparisonService implements ComparisonService {
         if (detail.getIndexName() == null) {
             LOGGER.error("MATCH_QUERY validation failed: indexName is missing");
             throw new SearchComparisonException(
-                    "indexName is required and must contain blue_index_name and green_index_name");
+                    "indexName is required and must contain blueIndexName and greenIndexName");
         }
 
-        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
-        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
+        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blueIndexName");
+        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "greenIndexName");
 
         JsonNode blue = Objects.requireNonNull(
                 runSearch(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, query, size),

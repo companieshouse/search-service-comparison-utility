@@ -1,8 +1,6 @@
 
 package uk.gov.companieshouse.search.comparison.handler;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 public class Event {
@@ -89,10 +87,8 @@ public class Event {
     }
 
     public static class IndexName {
-        @JsonProperty("blue_index_name")
         private String blueIndexName;
 
-        @JsonProperty("green_index_name")
         private String greenIndexName;
 
         public String getBlueIndexName() {

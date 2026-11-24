@@ -298,7 +298,7 @@ class MatchQueryComparisonServiceTest {
         );
 
         assertEquals(
-                "indexName is required and must contain blue_index_name and green_index_name",
+                "indexName is required and must contain blueIndexName and greenIndexName",
                 exception.getMessage()
         );
         verifyNoInteractions(restTemplate);
@@ -320,10 +320,10 @@ class MatchQueryComparisonServiceTest {
 
     private static Stream<Arguments> invalidIndexNameCases() {
         return Stream.of(
-                Arguments.of(null, DEFAULT_INDEX, "blue_index_name is required and must not be blank"),
-                Arguments.of(" ", DEFAULT_INDEX, "blue_index_name is required and must not be blank"),
-                Arguments.of(DEFAULT_INDEX, null, "green_index_name is required and must not be blank"),
-                Arguments.of(DEFAULT_INDEX, " ", "green_index_name is required and must not be blank")
+                Arguments.of(null, DEFAULT_INDEX, "blueIndexName is required and must not be blank"),
+                Arguments.of(" ", DEFAULT_INDEX, "blueIndexName is required and must not be blank"),
+                Arguments.of(DEFAULT_INDEX, null, "greenIndexName is required and must not be blank"),
+                Arguments.of(DEFAULT_INDEX, " ", "greenIndexName is required and must not be blank")
         );
     }
 
