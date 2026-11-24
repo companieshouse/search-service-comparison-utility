@@ -134,7 +134,7 @@ class DocumentCountServiceTest {
         );
 
         assertEquals(
-                "indexName is required and must contain blue_index_name and green_index_name",
+                "indexName is required and must contain blueIndexName and greenIndexName",
                 exception.getMessage()
         );
         verifyNoInteractions(restTemplate);
@@ -159,10 +159,10 @@ class DocumentCountServiceTest {
 
     private static Stream<Arguments> invalidIndexNameCases() {
         return Stream.of(
-                Arguments.of(null, "alpha_search", "blue_index_name is required and must not be blank"),
-                Arguments.of(" ", "alpha_search", "blue_index_name is required and must not be blank"),
-                Arguments.of("alpha_search", null, "green_index_name is required and must not be blank"),
-                Arguments.of("alpha_search", " ", "green_index_name is required and must not be blank")
+                Arguments.of(null, "alpha_search", "blueIndexName is required and must not be blank"),
+                Arguments.of(" ", "alpha_search", "blueIndexName is required and must not be blank"),
+                Arguments.of("alpha_search", null, "greenIndexName is required and must not be blank"),
+                Arguments.of("alpha_search", " ", "greenIndexName is required and must not be blank")
         );
     }
 

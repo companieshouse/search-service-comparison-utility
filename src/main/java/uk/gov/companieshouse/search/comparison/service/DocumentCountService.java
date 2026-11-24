@@ -36,11 +36,11 @@ public class DocumentCountService {
         if (detail.getIndexName() == null) {
             LOGGER.error("DOCUMENT_COUNT validation failed: indexName is missing");
             throw new SearchComparisonException(
-                    "indexName is required and must contain blue_index_name and green_index_name");
+                    "indexName is required and must contain blueIndexName and greenIndexName");
         }
 
-        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blue_index_name");
-        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "green_index_name");
+        String blueIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getBlueIndexName(), "blueIndexName");
+        String greenIndexName = ValidationUtils.validateIndexName(detail.getIndexName().getGreenIndexName(), "greenIndexName");
 
         long blueCount = getDocumentCount(searchComparisonProperties.blueSearchClusterUrl(), blueIndexName, "blue");
         long greenCount = getDocumentCount(searchComparisonProperties.greenSearchClusterUrl(), greenIndexName, "green");

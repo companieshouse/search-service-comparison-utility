@@ -52,6 +52,7 @@ public class ComparisonOrchestratorService {
             return Map.of(ERROR, "No details provided in event");
         }
 
+        logger.info("Received detail: " + event.getDetails());
         logger.info(String.format("Orchestration started for %d operation(s)", event.getDetails().size()));
         Map<String, List<Map<String, Object>>> groupedResults = new LinkedHashMap<>();
 

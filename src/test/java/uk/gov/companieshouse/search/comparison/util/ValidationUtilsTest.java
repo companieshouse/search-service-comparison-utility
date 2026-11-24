@@ -64,8 +64,8 @@ class ValidationUtilsTest {
     private static Stream<Arguments> validIndexNameCases() {
         return Stream.of(
                 Arguments.of("search_index-01", "indexName"),
-                Arguments.of("alpha_search", "blue_index_name"),
-                Arguments.of("GREEN-INDEX_2", "green_index_name")
+                Arguments.of("alpha_search", "blueIndexName"),
+                Arguments.of("GREEN-INDEX_2", "greenIndexName")
         );
     }
 }

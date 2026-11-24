@@ -6,8 +6,8 @@
       "query": null,
       "size": 0,
       "indexName": {
-        "blue_index_name": "alpha_search",
-        "green_index_name": "alpha_search"
+        "blueIndexName": "alpha_search",
+        "greenIndexName": "alpha_search"
       }
     },
     {
@@ -16,8 +16,8 @@
       "query": " GIRLONTHEGROUND ",
       "size": 100,
       "indexName": {
-        "blue_index_name": "alpha_search",
-        "green_index_name": "alpha_search"
+        "blueIndexName": "alpha_search",
+        "greenIndexName": "alpha_search"
       }
     }
   ]
