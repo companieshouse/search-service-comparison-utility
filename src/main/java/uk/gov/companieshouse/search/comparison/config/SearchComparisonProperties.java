@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:application.properties")
 public record SearchComparisonProperties(
         @Value("${BLUE_SEARCH_CLUSTER_URL}") String blueSearchClusterUrl,
-        @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenSearchClusterUrl,
-        @Value("${search.index-name}") String indexName) {
+        @Value("${GREEN_SEARCH_CLUSTER_URL}") String greenSearchClusterUrl) {
 
 }

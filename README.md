@@ -79,16 +79,35 @@ Example values are environment-specific and should be provided through deploymen
       "action": "compare",
       "operation": "DOCUMENT_COUNT",
       "query": null,
-      "size": 0
+      "size": 0,
+      "indexName": {
+        "blueIndexName": "alpha_search",
+        "greenIndexName": "alpha_search"
+      }
     },
     {
       "action": "compare",
       "operation": "MATCH_QUERY",
       "query": " GIRLONTHEGROUND ",
-      "size": 100
+      "size": 100,
+      "indexName": {
+        "blueIndexName": "alpha_search",
+        "greenIndexName": "alpha_search"
+      }
     }
   ]
 }
+```
+## Index Name Validation
+Both `blueIndexName` and `greenIndexName` are required in the event details and must conform to the following pattern:
+```text
+^[a-zA-Z0-9_-]+$
+
+### Allowed characters
+- Letters (`a-z`, `A-Z`)
+- Numbers (`0-9`)
+- Underscore (`_`)
+- Hyphen (`-`)
 ```
 ## Testing and Lambda Execution
 
@@ -129,13 +148,21 @@ Example:
       "action": "compare",
       "operation": "DOCUMENT_COUNT",
       "query": null,
-      "size": 0
+      "size": 0,
+      "indexName": {
+        "blueIndexName": "alpha_search",
+        "greenIndexName": "alpha_search"
+      }
     },
     {
       "action": "compare",
       "operation": "MATCH_QUERY",
       "query": " GIRLONTHEGROUND ",
-      "size": 100
+      "size": 100,
+      "indexName": {
+        "blueIndexName": "alpha_search",
+        "greenIndexName": "alpha_search"
+      }
     }
   ]
 }

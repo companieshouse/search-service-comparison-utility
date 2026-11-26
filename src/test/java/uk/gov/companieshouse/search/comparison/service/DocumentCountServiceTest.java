@@ -43,8 +43,7 @@ class DocumentCountServiceTest {
         client = new DocumentCountService(
             new SearchComparisonProperties(
                 "http://localhost:9200",
-                "http://localhost:9201",
-                "alpha_search"
+                "http://localhost:9201"
             ),
             restTemplate
         );
