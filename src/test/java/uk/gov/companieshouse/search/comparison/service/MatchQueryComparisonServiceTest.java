@@ -52,8 +52,7 @@ class MatchQueryComparisonServiceTest {
         service = new MatchQueryComparisonService(
                 new SearchComparisonProperties(
                         "http://localhost:9200",
-                        "http://localhost:9201",
-                        "alpha_search"
+                        "http://localhost:9201"
                 ),
                 restTemplate,
                 objectMapper,
@@ -264,8 +263,7 @@ class MatchQueryComparisonServiceTest {
         MatchQueryComparisonService serviceWithMockMapper = new MatchQueryComparisonService(
                 new SearchComparisonProperties(
                         "http://localhost:9200",
-                        "http://localhost:9201",
-                        "alpha_search"
+                        "http://localhost:9201"
                 ),
                 restTemplate,
                 mockObjectMapper,
